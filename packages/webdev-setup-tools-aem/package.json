@@ -1,7 +1,7 @@
 {
   "name": "webdev-setup-tools-aem",
   "version": "1.0.0",
-  "description": "set up aem dependencies for development tasks",
+  "description": "Set up aem dependencies for development tasks",
   "main": "installAem.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,6 +24,10 @@
     }
   ],
   "license": "MIT",
+  "peerDependencies": {
+    "webdev-setup-tools": "git+https://github.com/cdejarlais/webdev-setup-tools.git",
+    "request": "2.x"
+  },
   "bugs": {
     "url": "https://github.com/cdejarlais/webdev-setup-tools-aem/issues"
   },

@@ -1,7 +1,7 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('./setup.js'); // core module
+const setup = require('webdev-setup-tools'); // core module
 const fs = require('fs');
 const request = require('request');
 const operatingSystem = setup.getOperatingSystem();
