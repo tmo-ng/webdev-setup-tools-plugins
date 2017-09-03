@@ -27,8 +27,5 @@
   "peerDependencies": {
     "webdev-setup-tools": "git+https://github.com/cdejarlais/webdev-setup-tools.git"
   },
-  "bugs": {
-    "url": "https://github.com/cdejarlais/webdev-setup-tools-aem/issues"
-  },
   "homepage": "https://github.com/cdejarlais/webdev-setup-tools-ruby#readme"
 }
