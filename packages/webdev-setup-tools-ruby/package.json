@@ -1,0 +1,34 @@
+{
+  "name": "webdev-setup-tools-ruby",
+  "version": "1.0.0",
+  "description": "Set up ruby development tasks",
+  "main": "installRuby.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cdejarlais/webdev-setup-tools-ruby.git"
+  },
+  "keywords": [
+    "aem"
+  ],
+  "contributors": [
+    {
+      "name" : "Kendrick Burson",
+      "email": "Kendrick.Burson3@T-Mobile.com"
+    },
+    {
+      "name" : "Chris DeJarlais",
+      "email": "Christopher.DeJarlais1@T-Mobile.com"
+    }
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "webdev-setup-tools": "git+https://github.com/cdejarlais/webdev-setup-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cdejarlais/webdev-setup-tools-aem/issues"
+  },
+  "homepage": "https://github.com/cdejarlais/webdev-setup-tools-ruby#readme"
+}
