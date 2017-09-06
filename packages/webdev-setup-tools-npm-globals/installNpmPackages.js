@@ -4,8 +4,8 @@
 const setup = require('webdev-setup-tools-core');
 const operatingSystem = setup.getOperatingSystem();
 const options = setup.getOptions();
-const windowsPackages = setup.getProjectGlobals('windows');
-const npmPackages = setup.getProjectGlobals('npm');
+const windowsProjectGlobals = setup.getProjectGlobals('windows');
+const npmProjectGlobals = setup.getProjectGlobals('npm');
 const seconds = 1000;
 const minutes = 60 * seconds;
 
@@ -29,9 +29,9 @@ let installGlobalNpmDependencies = () => {
             userState.userGlobals = userGlobals;
             if (operatingSystem === 'win32') { // flag for additional install requirements
                 userState.windows = {};
-                return setup.runListOfPromises(windowsPackages, findVersion)
-                    .then(windowsPackages => {
-                        let windowsUpdates = setup.findRequiredAndOptionalUpdates(userGlobals, windowsPackages, windowsPackages);
+                return setup.runListOfPromises(windowsProjectGlobals, findVersion)
+                    .then(windowsRemotePackages => {
+                        let windowsUpdates = setup.findRequiredAndOptionalUpdates(userState.userGlobals, windowsProjectGlobals, windowsRemotePackages);
                         userState.windows.required = windowsUpdates.required;
                         userState.windows.optional = windowsUpdates.optional;
                         if (userState.windows.required.length > 0) {
@@ -42,10 +42,10 @@ let installGlobalNpmDependencies = () => {
                     })
             }
         })
-        .then(() => setup.runListOfPromises(npmPackages, findVersion)
-            .then(npmPackages => {
+        .then(() => setup.runListOfPromises(npmProjectGlobals, findVersion)
+            .then(npmRemotePackages => {
                 userState.npm = {};
-                let npmUpdates = setup.findRequiredAndOptionalUpdates(userState.userGlobals, npmPackages, npmPackages);
+                let npmUpdates = setup.findRequiredAndOptionalUpdates(userState.userGlobals, npmProjectGlobals, npmRemotePackages);
                 userState.npm.required = npmUpdates.required;
                 userState.npm.optional = npmUpdates.optional;
                 if (userState.npm.required.length > 0) {
