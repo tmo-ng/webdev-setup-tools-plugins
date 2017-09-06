@@ -7,6 +7,22 @@ const options = setup.getOptions();
 const requiredMavenVersion = setup.getProjectGlobals('maven');
 const versionPattern = setup.getVersionPattern();
 const homeDirectory = setup.getHomeDirectory();
+let setEnvironmentVariables = unzippedFolderPath => {
+    console.log('setting your maven system environment variables.');
+    let outFile = (operatingSystem === 'darwin') ? '.bash_profile' : '.bashrc';
+    let commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
+    let setM2Home = (operatingSystem === 'win32') ? setup.setWindowsEnvironmentVariable('M2_HOME', '\'' + unzippedFolderPath + '\'') :
+        'echo "export M2_HOME=/usr/local/maven" >> ' + homeDirectory + '/' + outFile;
+    let setMavenHome = (operatingSystem === 'win32') ? setup.setWindowsEnvironmentVariable('MAVEN_HOME', '\'' + unzippedFolderPath + '\'') :
+        'echo "export MAVEN_HOME=/usr/local/maven" >> ' + homeDirectory + '/' + outFile;
+    let setSystemPath = (operatingSystem === 'win32') ? '$old_path = ' + setup.getWindowsEnvironmentVariable('path') +
+        '; $new_path = $old_path + \';\' + \'' + unzippedFolderPath + '\' + \'\\bin\'; ' +
+        setup.setWindowsEnvironmentVariable('path', '$new_path') : 'echo "export PATH=/usr/local/maven/bin:\\$PATH" >> ' + homeDirectory + '/' + outFile;
+    let createSymbolicLinkToMaven = 'sudo ln -s ' + unzippedFolderPath + ' /usr/local/maven';
+    let setAllPathVariables = setM2Home + commandSeparator + setMavenHome + commandSeparator + setSystemPath;
+    setAllPathVariables = (operatingSystem === 'win32') ? setup.getSystemCommand(setAllPathVariables) : setAllPathVariables + commandSeparator + createSymbolicLinkToMaven;
+    return setup.executeSystemCommand(setAllPathVariables, options);
+};
 let installMavenOnHost = () => {
     let downloadPattern = (operatingSystem === 'win32') ? /http[^"]+maven-([0-9.]+)-bin\.zip/g : /http[^"]+maven-([0-9.]+)-bin\.tar\.gz/g;
     let unzippedFolderPath = (operatingSystem === 'win32') ?  'C:\\Program Files\\' : '/usr/local/';
@@ -34,26 +50,13 @@ let installMavenOnHost = () => {
             return setup.executeSystemCommand(unzipCommand, options);
         })
         .then(() => { // set environment variables
-            console.log('setting your maven system environment variables.');
-            let outFile = (operatingSystem === 'darwin') ? '.bash_profile' : '.bashrc';
-            let commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
-            let setM2Home = (operatingSystem === 'win32') ? setup.setWindowsEnvironmentVariable('M2_HOME', '\'' + unzippedFolderPath + '\'') :
-                'echo "export M2_HOME=/usr/local/maven" >> ' + homeDirectory + '/' + outFile;
-            let setMavenHome = (operatingSystem === 'win32') ? setup.setWindowsEnvironmentVariable('MAVEN_HOME', '\'' + unzippedFolderPath + '\'') :
-                'echo "export MAVEN_HOME=/usr/local/maven" >> ' + homeDirectory + '/' + outFile;
-            let setSystemPath = (operatingSystem === 'win32') ? '$old_path = ' + setup.getWindowsEnvironmentVariable('path') +
-                '; $new_path = $old_path + \';\' + \'' + unzippedFolderPath + '\' + \'\\bin\'; ' +
-                setup.setWindowsEnvironmentVariable('path', '$new_path') : 'echo "export PATH=/usr/local/maven/bin:\\$PATH" >> ' + homeDirectory + '/' + outFile;
-            let createSymbolicLinkToMaven = 'sudo ln -s ' + unzippedFolderPath + ' /usr/local/maven';
-            let setAllPathVariables = setM2Home + commandSeparator + setMavenHome + commandSeparator + setSystemPath;
-            setAllPathVariables = (operatingSystem === 'win32') ? setup.getSystemCommand(setAllPathVariables) : setAllPathVariables + commandSeparator + createSymbolicLinkToMaven;
-            return setup.executeSystemCommand(setAllPathVariables, options);
+            return setEnvironmentVariables(unzippedFolderPath);
         })
         .then(() => { // notify user of success
             console.log('successfully installed maven version ' + mavenVersion);
         })
         .catch(error => { // notify user of failure and reason
-            console.log('could not set environment variables at this time.');
+            console.log('Failed to install maven with the following message:\n');
             console.log(error);
         });
 };
