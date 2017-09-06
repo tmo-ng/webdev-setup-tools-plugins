@@ -75,7 +75,7 @@ let installGlobalNpmDependencies = () => {
             return userState;
         })
         .catch(error => {
-            console.error('Failed!', error);
+            console.error('Failed to install npm packages with the following message:\n', error);
         });
 };
 
