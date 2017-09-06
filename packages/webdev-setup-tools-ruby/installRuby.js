@@ -10,7 +10,7 @@ const globalRubyObject = {ruby: rubySemanticVersion};
 const homeDirectory = setup.getHomeDirectory();
 
 let installRuby = () => {
-    return (operatingSystem === 'win32') ? checkRubyInstallWindows() : checkRvmInstallMacLinux();
+    return (operatingSystem === 'win32') ? installRubyOnWindows() : installRvmOnMacOrLinux();
 };
 
 let installRubyOnWindowsHost = remoteRubyVersion => {
@@ -21,9 +21,10 @@ let installRubyOnWindowsHost = remoteRubyVersion => {
         .then(rubyFilePath => {
             let startRubyInstall = rubyFilePath + ' /verysilent /tasks="modpath"';
             return setup.executeSystemCommand(startRubyInstall, options);
-        });
+        })
+        .then(() => remoteRubyVersion.version);
 };
-let checkRubyInstallWindows = () => {
+let installRubyOnWindows = () => {
     let rubyUrlWindows = 'https://rubyinstaller.org/downloads/archives/';
     let rubyHyperlinkPattern = /https[^"]+rubyinstaller-([0-9.]+)[0-9-p]*x64.exe/g;
     let getRubyVersion = setup.getSystemCommand('ruby -v');
@@ -39,14 +40,22 @@ let checkRubyInstallWindows = () => {
             }
         })
         .then(() => setup.getVersionWithRequest(rubyUrlWindows, rubyHyperlinkPattern, rubySemanticVersion))
-        .then(remoteRubyVersion => {
-            let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRubyObject, globalRubyObject, [{name: 'ruby', highestCompatibleVersion: remoteRubyVersion.version}]);
+        .then(remoteRuby => {
+            let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRubyObject, globalRubyObject, [{name: 'ruby', highestCompatibleVersion: remoteRuby.version}]);
             if (rubyUpdates.required.length > 0) {
                 console.log('installing ruby now.');
-                return installRubyOnWindowsHost(remoteRubyVersion);
+                return installRubyOnWindowsHost(remoteRuby);
             } else if (rubyUpdates.optional.length > 0) {
-                return setup.confirmOptionalInstallation('do you want to install this optional ruby upgrade now (y/n)?  ', () => installRubyOnWindowsHost(remoteRubyVersion));
+                return setup.confirmOptionalInstallation('do you want to install this optional ruby upgrade now (y/n)?  ', () => installRubyOnWindowsHost(remoteRuby));
             }
+        })
+        .then(remoteVersion => {
+            let newRubyVersion = (remoteVersion) ? remoteVersion : localRubyObject.ruby;
+            console.log('ruby install complete. default version is now ' + newRubyVersion + '.');
+
+        })
+        .catch(error => {
+            console.log('ruby install failed with the following message:\n' + error);
         });
 };
 
@@ -64,7 +73,7 @@ let installRubyWithRvm = remoteRubyVersion => {
     return setup.executeSystemCommand(installRubyCommand, options)
         .then(() => remoteRubyVersion);
 };
-let checkRvmInstallMacLinux = () => {
+let installRvmOnMacOrLinux = () => {
     let installRvmForMacLinux = 'curl -sSL https://get.rvm.io | bash -s -- --ignore-dotfiles';
     let rvmGetAllRemoteRubyVersions = setup.convertToBashLoginCommand('rvm list known');
     let rvmGetAllLocalRubyVersions = setup.convertToBashLoginCommand('rvm list');
