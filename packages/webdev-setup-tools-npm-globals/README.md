@@ -1,7 +1,7 @@
 webdev-setup-tools-npm-globals
 ======================
 
-This package is the npm plugin for webdev-setup-tools-core module. Installs required npm modules for development.
+This package is the npm plugin for webdev-setup-tools module. Installs required npm modules for development.
 
 ## Installing Npm Package
 
