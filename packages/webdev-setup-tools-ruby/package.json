@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-ruby",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Set up ruby development tasks",
   "main": "installRuby.js",
   "scripts": {
@@ -15,11 +15,11 @@
   ],
   "contributors": [
     {
-      "name" : "Kendrick Burson",
+      "name": "Kendrick Burson",
       "email": "Kendrick.Burson3@T-Mobile.com"
     },
     {
-      "name" : "Chris DeJarlais",
+      "name": "Chris DeJarlais",
       "email": "Christopher.DeJarlais1@T-Mobile.com"
     }
   ],
