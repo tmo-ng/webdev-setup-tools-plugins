@@ -5,7 +5,7 @@ This package is the maven plugin for webdev-setup-tools-core module. Downloads, 
 
 ## Installing Npm Package
 
-  npm install https://github.com/cdejarlais/webdev-setup-tools-maven.git --save
+  npm install webdev-setup-tools-maven --save
 ## Usage
 
   Download, install, and configure maven for development
