@@ -5,8 +5,8 @@ const setup = require('webdev-setup-tools-core');
 const options = setup.getOptions();
 const operatingSystem = setup.getOperatingSystem();
 const versionPattern = setup.getVersionPattern();
-const rubyVersion = setup.getProjectGlobals('ruby'); // global semantic version range
-const rubyVersionObject = {ruby: rubyVersion};
+const rubySemanticVersion = setup.getProjectGlobals('ruby'); // global semantic version range
+const globalRubyObject = {ruby: rubySemanticVersion};
 const homeDirectory = setup.getHomeDirectory();
 
 let installRuby = () => {
@@ -27,7 +27,7 @@ let checkRubyInstallWindows = () => {
     let rubyUrlWindows = 'https://rubyinstaller.org/downloads/archives/';
     let rubyHyperlinkPattern = /https[^"]+rubyinstaller-([0-9.]+)[0-9-p]*x64.exe/g;
     let getRubyVersion = setup.getSystemCommand('ruby -v');
-    let localRuby = {};
+    let localRubyObject = {};
     return setup.executeSystemCommand(getRubyVersion, {resolve: options.resolve}) // check for existing ruby
         .catch(() => {
             console.log('no version of ruby is installed on this computer');
@@ -35,12 +35,12 @@ let checkRubyInstallWindows = () => {
         .then(localRubyMessage => {
             if (localRubyMessage) {
                 let localRubyVersion = localRubyMessage.match(versionPattern)[0];
-                localRuby = {ruby: localRubyVersion};
+                localRubyObject = {ruby: localRubyVersion};
             }
         })
-        .then(() => setup.getVersionWithRequest(rubyUrlWindows, rubyHyperlinkPattern, rubyVersion))
+        .then(() => setup.getVersionWithRequest(rubyUrlWindows, rubyHyperlinkPattern, rubySemanticVersion))
         .then(remoteRubyVersion => {
-            let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRuby, rubyVersionObject, [{name: 'ruby', highestCompatibleVersion: remoteRubyVersion.version}]);
+            let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRubyObject, globalRubyObject, [{name: 'ruby', highestCompatibleVersion: remoteRubyVersion.version}]);
             if (rubyUpdates.required.length > 0) {
                 console.log('installing ruby now.');
                 return installRubyOnWindowsHost(remoteRubyVersion);
@@ -70,7 +70,7 @@ let checkRvmInstallMacLinux = () => {
     let rvmGetAllLocalRubyVersions = setup.convertToBashLoginCommand('rvm list');
     let rvmSetLocalRubyDefault = 'rvm --default use ';
     let checkForExistingRvm = setup.convertToBashLoginCommand('which rvm');
-    let localRubyVersion;
+    let localRubyObject = {};
     return setup.executeSystemCommand(checkForExistingRvm, {resolve: options.resolve})
         .catch(() => {
             console.log('no version of rvm is installed on this computer');
@@ -84,14 +84,14 @@ let checkRvmInstallMacLinux = () => {
             let getLocalRubyOptions = {
                 resolve: (resolve, data) => {
                     let versions = data.match(versionPattern);
-                    let highestVersion = (versions) ? setup.getMaxCompatibleVersion(versions, rubyVersion) : versions;
+                    let highestVersion = (versions) ? setup.getMaxCompatibleVersion(versions, rubySemanticVersion) : versions;
                     resolve(highestVersion);
                 }
             };
             return setup.executeSystemCommand(rvmGetAllLocalRubyVersions, getLocalRubyOptions);
         })
-        .then(rubyVersion => { // get all remote versions of ruby
-            localRubyVersion = (rubyVersion) ? {ruby: rubyVersion} : {};
+        .then(localRubyVersion => { // get all remote versions of ruby
+            localRubyObject = (localRubyVersion) ? {ruby: localRubyVersion} : localRubyObject;
             return setup.executeSystemCommand(rvmGetAllRemoteRubyVersions, {resolve: options.resolve})
         })
         .then(allVersions => { // get the highest compatible version of ruby from remote
@@ -102,10 +102,10 @@ let checkRvmInstallMacLinux = () => {
                 versions.push(match[1] + match[2]);
                 match = rvmRubyPattern.exec(allVersions);
             }
-            return setup.getMaxCompatibleVersion(versions, rubyVersion);
+            return setup.getMaxCompatibleVersion(versions, rubySemanticVersion);
         })
         .then(remoteRubyVersion => { // install highest compatible version of ruby
-            let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRubyVersion, rubyVersionObject, [{name: 'ruby', highestCompatibleVersion: remoteRubyVersion}]);
+            let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRubyObject, globalRubyObject, [{name: 'ruby', highestCompatibleVersion: remoteRubyVersion}]);
             if (rubyUpdates.required.length > 0) {
                 console.log('installing ruby now.');
                 return installRubyWithRvm(remoteRubyVersion);
