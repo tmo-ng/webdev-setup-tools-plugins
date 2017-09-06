@@ -32,7 +32,8 @@ let walkThroughjdkInstall = () => {
                 'Scroll to the end of the file. If java has not been added to your environment, you can add it with the followind:\nJAVA_HOME=/usr/lib/jvm/{your java version here}\nexport JAVA_HOME\nSave the file and exit. ' +
                 'reload the system path by pressing . /etc/environment or close the terminal.';
             return setup.displayUserPrompt(displayPrompt);
-        }).then(() => {
+        })
+        .then(() => {
             if (operatingSystem === 'win32') {
                 return setup.displayUserPrompt('click on the button labeled "New", or double click on "Path"');
             }
@@ -48,11 +49,15 @@ let walkThroughjdkInstall = () => {
                 return setup.displayUserPrompt('Next, you will need to add a System Variable for "JAVA_HOME".\nClick new under the box for system variables.\nA box should pop up with values ' +
                     'for the variable name and the value. Enter "JAVA_HOME" as the name.\nFor the value, Enter "C:\\Program Files\\Java\\jdk1.8.0_141", but this is unique to each installation.');
             }
-        }).then(() => {
+        })
+        .then(() => {
             return setup.displayUserPrompt('open a new terminal then type "javac -v".\nIf this was done correctly, you should see output like "javac 1.8.0_141".');
         })
         .then(() => {
             return setup.displayUserPrompt('This concludes the java jdk setup.');
+        })
+        .catch(error => {
+            console.log('java jdk setup failed with the following message:\n' + error);
         });
 };
 
