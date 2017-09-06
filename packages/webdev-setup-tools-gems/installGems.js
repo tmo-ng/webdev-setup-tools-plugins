@@ -26,7 +26,7 @@ let installGems = () => {
         })
         .then(gems => {
             remoteGems = gems;
-            gemUpdates = setup.findRequiredAndOptionalUpdates(localGems, gems, remoteGems);
+            gemUpdates = setup.findRequiredAndOptionalUpdates(localGems, globalGems, remoteGems);
             if (gemUpdates.required.length > 0) {
                 let gemInstall = setup.getSystemCommand(setup.getInstallationCommand(gemUpdates.required, 'gem install', ':'));
                 return setup.executeSystemCommand(gemInstall, options);
