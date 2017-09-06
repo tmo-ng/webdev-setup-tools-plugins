@@ -1,5 +1,5 @@
 {
-  "name": "webdev-setup-tools-npm",
+  "name": "webdev-setup-tools-npm-globals",
   "version": "1.0.1",
   "description": "Set up npm packages for development tasks",
   "main": "installNpmPackages.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cdejarlais/webdev-setup-tools-npm.git"
+    "url": "git+https://github.com/cdejarlais/webdev-setup-tools-npm-globals.git"
   },
   "keywords": [
     "npm"
@@ -27,5 +27,5 @@
   "peerDependencies": {
     "webdev-setup-tools-core": "git+https://github.com/cdejarlais/webdev-setup-tools-core.git"
   },
-  "homepage": "https://github.com/cdejarlais/webdev-setup-tools-npm#readme"
+  "homepage": "https://github.com/cdejarlais/webdev-setup-tools-npm-globals#readme"
 }
