@@ -161,7 +161,7 @@ let aemInstallationProcedure = () => {
             console.log('successfully built project with mvn.');
         })
         .catch(error => {
-            console.log('failed to build maven in t-mobile folder with the following message\n' + error);
+            console.log('failed to build maven in t-mobile folder with the following message:\n' + error);
         });
 };
 
