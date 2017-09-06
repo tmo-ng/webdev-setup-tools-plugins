@@ -5,7 +5,7 @@ This package is the npm plugin for webdev-setup-tools-core module. Installs requ
 
 ## Installing Npm Package
 
-  npm install https://github.com/cdejarlais/webdev-setup-tools-npm.git --save
+  npm install webdev-setup-tools-npm --save
 ## Usage
 
   Install all required npm modules
