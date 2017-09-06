@@ -25,7 +25,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools": "git+https://github.com/cdejarlais/webdev-setup-tools.git"
+    "webdev-setup-tools-core": "git+https://github.com/cdejarlais/webdev-setup-tools-core.git"
   },
   "homepage": "https://github.com/cdejarlais/webdev-setup-tools-ruby#readme"
 }
