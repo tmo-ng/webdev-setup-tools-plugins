@@ -11,7 +11,7 @@ packages required for aem development.
 
   install aem packages
   ```sh
-  let setup_tools = require('webdev-setup-tools-core');
+  let setup_tools = require('webdev-setup-tools-aem');
   setup_tools.installAem();
   ```
 
