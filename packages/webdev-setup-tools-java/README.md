@@ -5,7 +5,7 @@ This package is the java installation plugin for webdev-setup-tools-core module.
 
 ## Installing Npm Package
 
-  npm install https://github.com/cdejarlais/webdev-setup-tools-java.git --save
+  npm install webdev-setup-tools-java --save
 ## Usage
 
   walk through steps to download, install, and setup the official Oracle java jdk
