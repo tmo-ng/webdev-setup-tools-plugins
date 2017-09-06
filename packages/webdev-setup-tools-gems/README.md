@@ -6,7 +6,7 @@ gems listed in root level package.json "gems" field.
 
 ## Installing Npm Package
 
-  npm install https://github.com/cdejarlais/webdev-setup-tools-gems.git --save
+  npm install webdev-setup-tools-gems --save
 ## Usage
 
   install ruby gems
