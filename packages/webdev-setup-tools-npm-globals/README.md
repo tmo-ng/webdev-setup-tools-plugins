@@ -10,7 +10,7 @@ This package is the npm plugin for webdev-setup-tools-core module. Installs requ
 
   Install all required npm modules
   ```sh
-  let setup_tools = require('webdev-setup-tools-maven');
+  let setup_tools = require('webdev-setup-tools-npm');
   setup_tools.installNpmPackages();
   ```
 
