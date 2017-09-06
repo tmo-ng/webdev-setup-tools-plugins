@@ -1,7 +1,7 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools');
+const setup = require('webdev-setup-tools-core');
 const options = setup.getOptions();
 const operatingSystem = setup.getOperatingSystem();
 const versionPattern = setup.getVersionPattern();
