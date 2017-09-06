@@ -44,6 +44,9 @@ let installGems = () => {
         })
         .then(() => {
             console.log('all gem packages are up to date.');
+        })
+        .catch(error => {
+            console.log('failed to install required gems with the following message:\n' + error);
         });
 };
 
