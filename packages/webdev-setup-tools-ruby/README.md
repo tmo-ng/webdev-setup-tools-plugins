@@ -5,7 +5,7 @@ This package is the ruby installation plugin for webdev-setup-tools-core module.
 
 ## Installing Npm Package
 
-  npm install https://github.com/cdejarlais/webdev-setup-tools-ruby.git --save
+  npm install webdev-setup-tools-ruby --save
 ## Usage
 
   Install ruby
