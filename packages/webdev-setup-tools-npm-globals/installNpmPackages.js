@@ -80,5 +80,5 @@ let installGlobalNpmDependencies = () => {
 };
 
 module.exports = {
-    installNpmGlobals: installGlobalNpmDependencies
+    installNpmPackages: installGlobalNpmDependencies
 };
