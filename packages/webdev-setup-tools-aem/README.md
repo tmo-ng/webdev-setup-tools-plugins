@@ -6,7 +6,7 @@ packages required for aem development.
 
 ## Installing Npm Package
 
-  npm install https://github.com/cdejarlais/webdev-setup-tools-aem.git --save
+  npm install webdev-setup-tools-aem --save
 ## Usage
 
   install aem packages
