@@ -56,8 +56,7 @@ let installMavenOnHost = () => {
             console.log('successfully installed maven version ' + mavenVersion);
         })
         .catch(error => { // notify user of failure and reason
-            console.log('Failed to install maven with the following message:\n');
-            console.log(error);
+            console.log('Failed to install maven with the following message:\n' + error);
         });
 };
 let installMaven = () => {
