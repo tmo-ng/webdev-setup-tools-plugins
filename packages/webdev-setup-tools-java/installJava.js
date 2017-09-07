@@ -5,7 +5,7 @@ const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
 const operatingSystem = os.platform().trim();
-const options = setup.getOptions();
+const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const requiredJavaVersion = setup.getProjectGlobals('java');
 let walkThroughjdkInstall = () => {
@@ -64,14 +64,15 @@ let walkThroughjdkInstall = () => {
 };
 
 let installJava = () => {
-    let javaOptions = {};
-    javaOptions.resolve = options.resolve;
-    javaOptions.stderr = (resolve, reject, data) => { // by default the output is directed to stderr
-        resolve(data);
+    let javaOutputFormatting = {
+        resolve: formatOutput.resolve,
+        stderr: (resolve, reject, data) => { // by default the output is directed to stderr
+            resolve(data);
+        }
     };
     console.log('checking java version compatibility.');
     let checkJavaCompilerVersion = setup.getSystemCommand('javac -version'); // important to test the java compiler
-    return setup.executeSystemCommand(checkJavaCompilerVersion, javaOptions)
+    return setup.executeSystemCommand(checkJavaCompilerVersion, javaOutputFormatting)
         .catch(() => { //java commands are redirected to stderr in both windows and linux environments
             console.log('no jdk version found on this computer');
             return walkThroughjdkInstall();
