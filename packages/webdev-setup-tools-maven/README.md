@@ -1,11 +1,29 @@
 webdev-setup-tools-maven
 ========================
 
-This package is the maven plugin for webdev-setup-tools-core module. Downloads, installs, and configures maven.
+This package is the maven plugin for webdev-setup-tools-core module.
 
 ## Installing Npm Package
 
   npm install webdev-setup-tools-maven --save
+
+## Purpose
+Often , the
+
+## Configuration
+
+This package should be installed in the
+node modules folder located in the root of the project folder.
+It determines the packages to install from the "web-dev-setup-tools" field in the package.json in the project root.
+This field typically has the following syntax:
+
+
+```sh
+"web-dev-setup-tools": {
+  "maven": "3.5.0",
+  // other package imports ...
+}
+```
 ## Usage
 
   Download, install, and configure maven for development

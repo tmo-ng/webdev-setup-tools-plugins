@@ -3,11 +3,13 @@
  */
 const setup = require('webdev-setup-tools');
 const os = require('os');
+
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const requiredMavenVersion = setup.getProjectGlobals('maven');
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const homeDirectory = os.homedir();
+
 let setEnvironmentVariables = unzippedFolderPath => {
     console.log('setting your maven system environment variables.');
     let outFile = (operatingSystem === 'darwin') ? '.bash_profile' : '.bashrc';
