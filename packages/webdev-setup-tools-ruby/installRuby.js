@@ -4,6 +4,7 @@
 const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
+
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
