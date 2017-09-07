@@ -1,13 +1,14 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools-core'); // core module
+const setup = require('webdev-setup-tools'); // core module
 const fs = require('fs');
 const request = require('request');
-const operatingSystem = setup.getOperatingSystem();
-const options = setup.getOptions();
+const os = require('os');
+const operatingSystem = os.platform().trim();
+const formatOutput = setup.getOutputOptions();
 const aemGlobals = setup.getProjectGlobals('aem');
-const homeDirectory = setup.getHomeDirectory();
+const homeDirectory = os.homedir();
 const findPortProcessWindows = 'netstat -a -n -o | findstr :4502';
 const findPortProcessOsxLinux = 'lsof -i TCP:4502';
 const seconds = 1000;
@@ -18,7 +19,7 @@ let installAemDependencies = () => {
     const windowsFindQuickstart = 'dir C:\\*crx-quickstart /ad /b /s';
     const osxLinuxFindQuickstart = 'sudo find ' + homeDirectory + ' -type d -name "crx-quickstart"';
     let findQuickstart = (operatingSystem === 'win32') ? windowsFindQuickstart : osxLinuxFindQuickstart;
-    return setup.executeSystemCommand(findQuickstart, { resolve: options.resolve })
+    return setup.executeSystemCommand(findQuickstart, { resolve: formatOutput.resolve })
         .then(osResponse => {
             if (osResponse !== '') {
                 console.log('found an existing aem installation at ' + osResponse.trim() + '.');
@@ -38,7 +39,7 @@ let waitForServerStartup = () => {
     let portListenCommand = (operatingSystem === 'win32') ? findPortProcessWindows : findPortProcessOsxLinux;
     return new Promise((resolve) => {
         (function waitForEstablishedConnection() {
-            return setup.executeSystemCommand(portListenCommand, {resolve: options.resolve})
+            return setup.executeSystemCommand(portListenCommand, {resolve: formatOutput.resolve})
                 .then(osResponse => {
                     if (osResponse.includes('ESTABLISHED')) {
                         console.log(osResponse);
@@ -91,24 +92,24 @@ let mavenCleanAndAutoInstall = (commandSeparator, folderSeparator) => {
     runMavenCleanInstall += 'cd ' + setup.goUpDirectories(projectRoot) + 't-mobile' + commandSeparator + 'mvn clean install \-PautoInstallPackage > ' + outFile;
 
     console.log('running mvn clean and auto package install.\nOutput is being sent to the file ' + outFile);
-    return setup.executeSystemCommand(setup.getSystemCommand(runMavenCleanInstall), options);
+    return setup.executeSystemCommand(setup.getSystemCommand(runMavenCleanInstall), formatOutput);
 };
 let copyNodeFile = folderSeparator => () => {
     let nodeFolderPath = setup.goUpDirectories(projectRoot) + 't-mobile' + folderSeparator + 'node';
     console.log('copying node file into ' + nodeFolderPath);
-    return setup.executeSystemCommand('mkdir ' + nodeFolderPath, options)
+    return setup.executeSystemCommand('mkdir ' + nodeFolderPath, formatOutput)
         .then(() => {
             let nodePath = process.execPath;
             let copyNodeFile = (operatingSystem === 'win32') ? 'copy ' : 'cp ';
             copyNodeFile += '\"' + nodePath + '\" ' + nodeFolderPath + folderSeparator;
-            return setup.executeSystemCommand(copyNodeFile, options);
+            return setup.executeSystemCommand(copyNodeFile, formatOutput);
         });
 };
 let startAemServer = (commandSeparator, jarName) =>{
     console.log('starting jar file AEM folder.');
     let startServer = 'cd ' + setup.goUpDirectories(projectRootUpOne) + 'AEM' + commandSeparator;
     startServer += (operatingSystem === 'win32') ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName + ' &';
-    setup.executeSystemCommand(setup.getSystemCommand(startServer), options);
+    setup.executeSystemCommand(setup.getSystemCommand(startServer), formatOutput);
 };
 let downloadAllAemFiles = folderSeparator => () => {
     return setup.runListOfPromises(aemGlobals.zip_files, (dependency, globalPackage) => {
@@ -118,7 +119,7 @@ let downloadAllAemFiles = folderSeparator => () => {
 };
 let stopAemProcess = () => {
     let findPortProcess = (operatingSystem === 'win32') ? findPortProcessWindows : findPortProcessOsxLinux;
-    return setup.executeSystemCommand(findPortProcess, {resolve: options.resolve})
+    return setup.executeSystemCommand(findPortProcess, {resolve: formatOutput.resolve})
         .then(output => {
             console.log(output);
             let process = /LISTENING.*?([0-9]+)/g.exec(output);
@@ -127,7 +128,7 @@ let stopAemProcess = () => {
         .then(processId => {
             console.log('ending process number ' + processId);
             let endPortProcess = (operatingSystem === 'win32') ? 'taskkill /F /PID ' : 'kill ';
-            return setup.executeSystemCommand(endPortProcess + processId, options);
+            return setup.executeSystemCommand(endPortProcess + processId, formatOutput);
         });
 };
 let aemInstallationProcedure = () => {
@@ -140,7 +141,7 @@ let aemInstallationProcedure = () => {
     };
     let jarName = '';
     console.log('creating AEM directory at ' + aemFolderPath);
-    return setup.executeSystemCommand('mkdir ' + aemFolderPath, options)
+    return setup.executeSystemCommand('mkdir ' + aemFolderPath, formatOutput)
         .then(() => {
             console.log('downloading jar file into AEM folder.');
             return setup.runListOfPromises(aemGlobals.jar_files, downloadFile);
