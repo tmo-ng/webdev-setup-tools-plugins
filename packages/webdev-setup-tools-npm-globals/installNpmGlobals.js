@@ -3,6 +3,7 @@
  */
 const setup = require('webdev-setup-tools');
 const os = require('os');
+
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const windowsProjectGlobals = setup.getProjectGlobals('node').globals.windows;
