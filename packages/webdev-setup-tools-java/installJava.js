@@ -1,11 +1,13 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools-core');
-const operatingSystem = setup.getOperatingSystem();
+const setup = require('webdev-setup-tools');
+const semver = require('semver');
+const os = require('os');
+const operatingSystem = os.platform().trim();
 const options = setup.getOptions();
-const versionPattern = setup.getVersionPattern();
-const requiredJavaVersion = setup.getProjectGlobals('engines')['java'];
+const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
+const requiredJavaVersion = setup.getProjectGlobals('java');
 let walkThroughjdkInstall = () => {
     return setup.displayUserPrompt('This prompt will walk you through\nthe installation and setup of the official oracle java jdk.' +
         '\nWhen a step has been completed, press enter to continue to the next step.\nPlease press enter to begin.')
@@ -77,7 +79,7 @@ let installJava = () => {
         .then(javaVersion => {
             if (javaVersion) {
                 let version = javaVersion.match(versionPattern);
-                if (version && setup.isPackageCompatible(version[0], requiredJavaVersion)) {
+                if (version && !semver.outside(version[0], requiredJavaVersion, '<')) {
                     console.log('java version ' + version[0] + ' is up to date');
                     return;
                 }
