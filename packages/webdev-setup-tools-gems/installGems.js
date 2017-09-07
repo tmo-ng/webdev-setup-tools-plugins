@@ -1,9 +1,10 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools-core');
-const globalGems = setup.getProjectGlobals('gems');
-const operatingSystem = setup.getOperatingSystem();
+const setup = require('webdev-setup-tools');
+const os = require('os');
+const operatingSystem = os.platform().trim();
+const globalGems = setup.getProjectGlobals('ruby').gems;
 const options = setup.getOptions();
 let installGems = () => {
     let gemVersionPattern = /([a-z-A-Z0-9]+) \(([0-9]+(?:\.[0-9]+)+)/g;

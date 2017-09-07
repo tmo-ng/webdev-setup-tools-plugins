@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-gems",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Set up required gems for development",
   "main": "installGems.js",
   "scripts": {
@@ -25,7 +25,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools-core": "git+https://github.com/cdejarlais/webdev-setup-tools-core.git"
+    "webdev-setup-tools": "1.x"
   },
   "homepage": "https://github.com/cdejarlais/webdev-setup-tools-gems#readme"
 }
