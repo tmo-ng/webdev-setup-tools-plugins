@@ -1,13 +1,15 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools-core');
+const setup = require('webdev-setup-tools');
+const semver = require('semver');
+const os = require('os');
+const operatingSystem = os.platform().trim();
 const options = setup.getOptions();
-const operatingSystem = setup.getOperatingSystem();
-const versionPattern = setup.getVersionPattern();
-const rubySemanticVersion = setup.getProjectGlobals('ruby'); // global semantic version range
+const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
+const rubySemanticVersion = setup.getProjectGlobals('ruby').install; // global semantic version range
 const globalRubyObject = {ruby: rubySemanticVersion};
-const homeDirectory = setup.getHomeDirectory();
+const homeDirectory = os.homedir();
 
 let installRuby = () => {
     return (operatingSystem === 'win32') ? installRubyOnWindows() : installRvmOnMacOrLinux();
@@ -93,7 +95,7 @@ let installRvmOnMacOrLinux = () => {
             let getLocalRubyOptions = {
                 resolve: (resolve, data) => {
                     let versions = data.match(versionPattern);
-                    let highestVersion = (versions) ? setup.getMaxCompatibleVersion(versions, rubySemanticVersion) : versions;
+                    let highestVersion = (versions) ? semver.maxSatisfying(versions, rubySemanticVersion) : versions;
                     resolve(highestVersion);
                 }
             };
@@ -111,7 +113,7 @@ let installRvmOnMacOrLinux = () => {
                 versions.push(match[1] + match[2]);
                 match = rvmRubyPattern.exec(allVersions);
             }
-            return setup.getMaxCompatibleVersion(versions, rubySemanticVersion);
+            return semver.maxSatisfying(versions, rubySemanticVersion);
         })
         .then(remoteRubyVersion => { // install highest compatible version of ruby
             let rubyUpdates = setup.findRequiredAndOptionalUpdates(localRubyObject, globalRubyObject, [{name: 'ruby', highestCompatibleVersion: remoteRubyVersion}]);

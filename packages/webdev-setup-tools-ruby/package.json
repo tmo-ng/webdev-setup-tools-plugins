@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-ruby",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Set up ruby development tasks",
   "main": "installRuby.js",
   "scripts": {
@@ -25,7 +25,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools-core": "git+https://github.com/cdejarlais/webdev-setup-tools-core.git"
+    "semver": "5.x",
+    "webdev-setup-tools": "1.x"
   },
   "homepage": "https://github.com/cdejarlais/webdev-setup-tools-ruby#readme"
 }
