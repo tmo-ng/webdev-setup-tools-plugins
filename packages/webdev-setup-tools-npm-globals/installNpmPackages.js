@@ -1,13 +1,13 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools-core');
-const operatingSystem = setup.getOperatingSystem();
-const options = setup.getOptions();
+const setup = require('webdev-setup-tools');
+const os = require('os');
+const operatingSystem = os.platform().trim();
+const formatOutput = setup.getOutputOptions();
 const windowsProjectGlobals = setup.getProjectGlobals('windows');
-const npmProjectGlobals = setup.getProjectGlobals('npm');
-const seconds = 1000;
-const minutes = 60 * seconds;
+const npmProjectGlobals = setup.getProjectGlobals('node').globals;
+const minutes = 60 * 1000;
 
 let installGlobalNpmDependencies = () => {
     let userState = {};
@@ -36,7 +36,7 @@ let installGlobalNpmDependencies = () => {
                         userState.windows.optional = windowsUpdates.optional;
                         if (userState.windows.required.length > 0) {
                             console.log('installing required windows packages.');
-                            return Promise.race([setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.windows.required, npmInstallModuleAsGlobal, '@')), { resolve: options.resolve }),
+                            return Promise.race([setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.windows.required, npmInstallModuleAsGlobal, '@')), { resolve: formatOutput.resolve }),
                                 setup.handleUnresponsiveSystem(2 * minutes, 'The system is not responding.\ndo you want to keep waiting (y/n)?  ')]);
                         }
                     })
@@ -50,7 +50,7 @@ let installGlobalNpmDependencies = () => {
                 userState.npm.optional = npmUpdates.optional;
                 if (userState.npm.required.length > 0) {
                     console.log('installing required npm packages.');
-                    return setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.required, npmInstallModuleAsGlobal, '@')), options);
+                    return setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.required, npmInstallModuleAsGlobal, '@')), formatOutput);
                 }
             }))
         .then(() => {
@@ -58,7 +58,7 @@ let installGlobalNpmDependencies = () => {
                 console.log('windows updates exist for the following packages: ');
                 setup.listOptionals(userState.windows.optional);
                 return setup.confirmOptionalInstallation('do you want to install these optional windows updates now (y/n)?  ',
-                    () => setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.windows.optional, npmInstallModuleAsGlobal, '@')), options));
+                    () => setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.windows.optional, npmInstallModuleAsGlobal, '@')), formatOutput));
             }
 
         })
@@ -67,7 +67,7 @@ let installGlobalNpmDependencies = () => {
                 console.log('npm updates exist for the following packages: ');
                 setup.listOptionals(userState.npm.optional);
                 return setup.confirmOptionalInstallation('do you want to install these optional npm updates now (y/n)?  ',
-                    () => setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.optional, npmInstallModuleAsGlobal, '@')), options));
+                    () => setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.optional, npmInstallModuleAsGlobal, '@')), formatOutput));
             }
         })
         .then(() => {
