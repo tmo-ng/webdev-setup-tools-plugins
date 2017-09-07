@@ -1,12 +1,13 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools-core');
-const operatingSystem = setup.getOperatingSystem();
-const options = setup.getOptions();
+const setup = require('webdev-setup-tools');
+const os = require('os');
+const operatingSystem = os.platform().trim();
+const formatOutput = setup.getOutputOptions();
 const requiredMavenVersion = setup.getProjectGlobals('maven');
-const versionPattern = setup.getVersionPattern();
-const homeDirectory = setup.getHomeDirectory();
+const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
+const homeDirectory = os.homedir();
 let setEnvironmentVariables = unzippedFolderPath => {
     console.log('setting your maven system environment variables.');
     let outFile = (operatingSystem === 'darwin') ? '.bash_profile' : '.bashrc';
@@ -21,7 +22,7 @@ let setEnvironmentVariables = unzippedFolderPath => {
     let createSymbolicLinkToMaven = 'sudo ln -s ' + unzippedFolderPath + ' /usr/local/maven';
     let setAllPathVariables = setM2Home + commandSeparator + setMavenHome + commandSeparator + setSystemPath;
     setAllPathVariables = (operatingSystem === 'win32') ? setup.getSystemCommand(setAllPathVariables) : setAllPathVariables + commandSeparator + createSymbolicLinkToMaven;
-    return setup.executeSystemCommand(setAllPathVariables, options);
+    return setup.executeSystemCommand(setAllPathVariables, formatOutput);
 };
 let installMavenOnHost = () => {
     let downloadPattern = (operatingSystem === 'win32') ? /http[^"]+maven-([0-9.]+)-bin\.zip/g : /http[^"]+maven-([0-9.]+)-bin\.tar\.gz/g;
@@ -47,7 +48,7 @@ let installMavenOnHost = () => {
             } else {
                 unzipCommand = 'sudo tar -xvzf ' + downloadPath + ' -C /usr/local/';
             }
-            return setup.executeSystemCommand(unzipCommand, options);
+            return setup.executeSystemCommand(unzipCommand, formatOutput);
         })
         .then(() => { // set environment variables
             return setEnvironmentVariables(unzippedFolderPath);
@@ -61,7 +62,7 @@ let installMavenOnHost = () => {
 };
 let installMaven = () => {
     const checkMavenVersion = setup.getSystemCommand('mvn -v');
-    return setup.executeSystemCommand(checkMavenVersion, {resolve: options.resolve})
+    return setup.executeSystemCommand(checkMavenVersion, {resolve: formatOutput.resolve})
         .catch(() => {
             console.log('No version of maven detected. Installing maven now.');
             return installMavenOnHost();
