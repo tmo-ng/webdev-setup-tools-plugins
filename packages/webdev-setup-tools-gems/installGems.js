@@ -3,9 +3,11 @@
  */
 const setup = require('webdev-setup-tools');
 const os = require('os');
+
 const operatingSystem = os.platform().trim();
 const globalGems = setup.getProjectGlobals('ruby').gems;
 const formatOutput = setup.getOutputOptions();
+
 let installGems = () => {
     let gemVersionPattern = /([a-z-A-Z0-9]+) \(([0-9]+(?:\.[0-9]+)+)/g;
     let getGlobals = modules => setup.getAllUserGlobals(modules, gemVersionPattern);
