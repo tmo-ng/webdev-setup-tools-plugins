@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-maven",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Setup maven for development",
   "main": "installMaven.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/cdejarlais/webdev-setup-tools-maven.git"
   },
   "keywords": [
-    "ruby"
+    "maven"
   ],
   "contributors": [
     {
@@ -25,7 +25,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools-core": "git+https://github.com/cdejarlais/webdev-setup-tools-core.git"
+    "webdev-setup-tools": "1.x"
   },
   "homepage": "https://github.com/cdejarlais/webdev-setup-tools-maven#readme"
 }
