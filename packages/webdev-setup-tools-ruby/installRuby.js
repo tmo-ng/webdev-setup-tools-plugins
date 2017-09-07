@@ -5,7 +5,7 @@ const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
 const operatingSystem = os.platform().trim();
-const options = setup.getOptions();
+const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const rubySemanticVersion = setup.getProjectGlobals('ruby').install; // global semantic version range
 const globalRubyObject = {ruby: rubySemanticVersion};
@@ -22,7 +22,7 @@ let installRubyOnWindowsHost = remoteRubyVersion => {
     return setup.downloadPackage(path, rubyDownloadPath)
         .then(rubyFilePath => {
             let startRubyInstall = rubyFilePath + ' /verysilent /tasks="modpath"';
-            return setup.executeSystemCommand(startRubyInstall, options);
+            return setup.executeSystemCommand(startRubyInstall, formatOutput);
         })
         .then(() => remoteRubyVersion.version);
 };
@@ -31,7 +31,7 @@ let installRubyOnWindows = () => {
     let rubyHyperlinkPattern = /https[^"]+rubyinstaller-([0-9.]+)[0-9-p]*x64.exe/g;
     let getRubyVersion = setup.getSystemCommand('ruby -v');
     let localRubyObject = {};
-    return setup.executeSystemCommand(getRubyVersion, {resolve: options.resolve}) // check for existing ruby
+    return setup.executeSystemCommand(getRubyVersion, {resolve: formatOutput.resolve}) // check for existing ruby
         .catch(() => {
             console.log('no version of ruby is installed on this computer');
         })
@@ -63,16 +63,16 @@ let installRubyOnWindows = () => {
 
 let installRvm = installRvmForMacLinux => {
     console.log('installing rvm now');
-    return setup.executeSystemCommand(installRvmForMacLinux, options)
+    return setup.executeSystemCommand(installRvmForMacLinux, formatOutput)
         .then(() => { // update environment variables
             let outFile = (operatingSystem === 'darwin') ? '/.bash_profile' : '/.bashrc';
-            return setup.executeSystemCommand('echo "[ -s \\"\\$HOME/.rvm/scripts/rvm\\" ] && \\. \\"\\$HOME/.rvm/scripts/rvm\\"" >> ' + homeDirectory + outFile, options)
-                .then(() => setup.executeSystemCommand('echo "export PATH=\\"\\$PATH:\\$HOME/.rvm/bin\\"" >> ' + homeDirectory + outFile, options));
+            return setup.executeSystemCommand('echo "[ -s \\"\\$HOME/.rvm/scripts/rvm\\" ] && \\. \\"\\$HOME/.rvm/scripts/rvm\\"" >> ' + homeDirectory + outFile, formatOutput)
+                .then(() => setup.executeSystemCommand('echo "export PATH=\\"\\$PATH:\\$HOME/.rvm/bin\\"" >> ' + homeDirectory + outFile, formatOutput));
         });
 };
 let installRubyWithRvm = remoteRubyVersion => {
     let installRubyCommand = setup.getSystemCommand('rvm install ' + remoteRubyVersion);
-    return setup.executeSystemCommand(installRubyCommand, options)
+    return setup.executeSystemCommand(installRubyCommand, formatOutput)
         .then(() => remoteRubyVersion);
 };
 let installRvmOnMacOrLinux = () => {
@@ -82,7 +82,7 @@ let installRvmOnMacOrLinux = () => {
     let rvmSetLocalRubyDefault = 'rvm --default use ';
     let checkForExistingRvm = setup.convertToBashLoginCommand('which rvm');
     let localRubyObject = {};
-    return setup.executeSystemCommand(checkForExistingRvm, {resolve: options.resolve})
+    return setup.executeSystemCommand(checkForExistingRvm, {resolve: formatOutput.resolve})
         .catch(() => {
             console.log('no version of rvm is installed on this computer');
         })
@@ -103,7 +103,7 @@ let installRvmOnMacOrLinux = () => {
         })
         .then(localRubyVersion => { // get all remote versions of ruby
             localRubyObject = (localRubyVersion) ? {ruby: localRubyVersion} : localRubyObject;
-            return setup.executeSystemCommand(rvmGetAllRemoteRubyVersions, {resolve: options.resolve})
+            return setup.executeSystemCommand(rvmGetAllRemoteRubyVersions, {resolve: formatOutput.resolve})
         })
         .then(allVersions => { // get the highest compatible version of ruby from remote
             let rvmRubyPattern = /\[ruby-]([.0-9]+)\[([.0-9-a-z]+)]/g;
@@ -125,7 +125,7 @@ let installRvmOnMacOrLinux = () => {
             }
         })
         .then(rubyVersion => { // set the new version as default
-            return setup.executeSystemCommand(setup.convertToBashLoginCommand(rvmSetLocalRubyDefault + rubyVersion), options)
+            return setup.executeSystemCommand(setup.convertToBashLoginCommand(rvmSetLocalRubyDefault + rubyVersion), formatOutput)
                 .then(() => {
                     console.log('ruby install complete. default version is now ' + rubyVersion + '.');
                 });
