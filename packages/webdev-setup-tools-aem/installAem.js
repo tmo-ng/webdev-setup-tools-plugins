@@ -1,10 +1,11 @@
 /**
  * Created by CDejarl1 on 8/30/2017.
  */
-const setup = require('webdev-setup-tools'); // core module
+const setup = require('webdev-setup-tools');
 const fs = require('fs');
 const request = require('request');
 const os = require('os');
+
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const aemGlobals = setup.getProjectGlobals('aem');
@@ -14,6 +15,7 @@ const findPortProcessOsxLinux = 'lsof -i TCP:4502';
 const seconds = 1000;
 const projectRoot = 2;
 const projectRootUpOne = 3;
+
 let installAemDependencies = () => {
     console.log('checking for Aem dependencies now..');
     const windowsFindQuickstart = 'dir C:\\*crx-quickstart /ad /b /s';
