@@ -144,7 +144,7 @@ let aemInstallationProcedure = () => {
     return setup.executeSystemCommand('mkdir ' + aemFolderPath, formatOutput)
         .then(() => {
             console.log('downloading jar file into AEM folder.');
-            return setup.runListOfPromises(aemGlobals.jar_files, downloadFile);
+            return setup.runListOfPromises(aemGlobals.author, downloadFile);
         })
         .then(fileName => {
             jarName = fileName;
