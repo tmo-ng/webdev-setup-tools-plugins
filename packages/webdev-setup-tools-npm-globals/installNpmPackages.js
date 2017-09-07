@@ -5,7 +5,7 @@ const setup = require('webdev-setup-tools');
 const os = require('os');
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
-const windowsProjectGlobals = setup.getProjectGlobals('windows');
+const windowsProjectGlobals = setup.getProjectGlobals('node').globals.windows;
 const npmProjectGlobals = setup.getProjectGlobals('node').globals;
 const minutes = 60 * 1000;
 
