@@ -5,7 +5,7 @@ const setup = require('webdev-setup-tools');
 const os = require('os');
 const operatingSystem = os.platform().trim();
 const globalGems = setup.getProjectGlobals('ruby').gems;
-const options = setup.getOptions();
+const formatOutput = setup.getOutputOptions();
 let installGems = () => {
     let gemVersionPattern = /([a-z-A-Z0-9]+) \(([0-9]+(?:\.[0-9]+)+)/g;
     let getGlobals = modules => setup.getAllUserGlobals(modules, gemVersionPattern);
@@ -30,7 +30,7 @@ let installGems = () => {
             gemUpdates = setup.findRequiredAndOptionalUpdates(localGems, globalGems, remoteGems);
             if (gemUpdates.required.length > 0) {
                 let gemInstall = setup.getSystemCommand(setup.getInstallationCommand(gemUpdates.required, 'gem install', ':'));
-                return setup.executeSystemCommand(gemInstall, options);
+                return setup.executeSystemCommand(gemInstall, formatOutput);
             }
         })
         .then(() => {
@@ -39,7 +39,7 @@ let installGems = () => {
                 setup.listOptionals(gemUpdates.optional);
                 return setup.confirmOptionalInstallation('do you want to install these optional gem updates now (y/n)?  ', () => {
                     let gemInstall = setup.getSystemCommand(setup.getInstallationCommand(gemUpdates.optional, 'gem install', ':'));
-                    return setup.executeSystemCommand(gemInstall, options);
+                    return setup.executeSystemCommand(gemInstall, formatOutput);
                 });
             }
         })
