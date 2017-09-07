@@ -1,11 +1,30 @@
 webdev-setup-tools-java
 =======================
 
-This package is the java installation plugin for webdev-setup-tools-core module. Walks through installation of the official Oracle java jdk.
+This package is the java installation plugin for webdev-setup-tools-core module.
 
 ## Installing Npm Package
 
   npm install webdev-setup-tools-java --save
+
+## Purpose
+Often , the
+
+## Configuration
+
+This package should be installed in the
+node modules folder located in the root of the project folder.
+It determines the packages to install from the "web-dev-setup-tools" field in the package.json in the project root.
+This field typically has the following syntax:
+
+
+```sh
+"web-dev-setup-tools": {
+  "java": ">1.7.0"
+  // other package imports ...
+}
+```
+
 ## Usage
 
   walk through steps to download, install, and setup the official Oracle java jdk

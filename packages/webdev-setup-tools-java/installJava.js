@@ -4,10 +4,12 @@
 const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
+
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const requiredJavaVersion = setup.getProjectGlobals('java');
+
 let walkThroughjdkInstall = () => {
     return setup.displayUserPrompt('This prompt will walk you through\nthe installation and setup of the official oracle java jdk.' +
         '\nWhen a step has been completed, press enter to continue to the next step.\nPlease press enter to begin.')
