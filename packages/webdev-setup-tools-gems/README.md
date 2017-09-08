@@ -23,10 +23,12 @@ This field typically has the following syntax:
     "ruby": {
       "install": "^2.0.0",
       "gems": {
-        "sass":"^3.0.0"
+        "sass":"^3.0.0",
+        "json":"^2.0.0",
+        // other gems to install ...
       }
     },
-    // other package imports ...
+    // other packages to install ...
   }
 ```
 
