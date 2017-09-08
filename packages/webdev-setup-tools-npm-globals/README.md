@@ -27,10 +27,11 @@ This field typically has the following syntax:
         "gulp": ">=3.9.1",
         "windows": {
           "windows-build-tools": "^1.2.0"
-        }
+        },
+        // other npm packages to install ...
       }
     },
-    // other package imports ...
+    // other packages to install ...
   }
 ```
 ## Usage
