@@ -21,7 +21,7 @@ This field typically has the following syntax:
 ```sh
 "web-dev-setup-tools": {
   "java": ">1.7.0"
-  // other package imports ...
+  // other packages to install ...
 }
 ```
 
