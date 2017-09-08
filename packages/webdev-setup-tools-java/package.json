@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cdejarlais/webdev-setup-tools-java.git"
+    "url": "git+https://github.com/TMNG-T-Mobile/webdev-setup-tools-java.git"
   },
   "keywords": [
     "java"
@@ -28,5 +28,5 @@
     "semver": "5.x",
     "webdev-setup-tools": "1.x"
   },
-  "homepage": "https://github.com/cdejarlais/webdev-setup-tools-java#readme"
+  "homepage": "https://github.com/TMNG-T-Mobile/webdev-setup-tools-java#readme"
 }
