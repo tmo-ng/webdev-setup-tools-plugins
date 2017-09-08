@@ -20,20 +20,24 @@ This field typically has the following syntax:
   ```sh
   "web-dev-setup-tools": {
       "aem": {
-        "author": {
+        "author": { // aem author file
           "aem6-author-p4009.jar": "https://sample.com/aem6-author-p4009.jar"
         },
-        "license": {
+        "license": { // aem license file
           "license.properties": "https://sample.com/license.properties"
         },
-        "zip_files": {
+        "zip_files": { // content files to upload and install
           "acs-aem-2.12.0-min.zip": "https://github.com/acs-aem-2.12.0-min.zip",
           "AEM-2-6.1.SP2.zip": "https://sample.com/AEM-2-6.1.SP2.zip",
           "cq-6.1.0-sp2-cf-1.0.zip": "https://sample.com/cq-6.1.0-sp2-cf-1.0.zip",
           "BRT_content_07.zip": "https://sample.com/BRT_content_07.zip"
-        }
-      },
-      // other package imports ...
+        },
+        "aem_folder_path": "C:\" // where to install aem e.g. "C:\AEM"
+        "download_path": "C:\Users\Mkay\Downloads" // where to download content files
+        "crx_endpoint": "http://<username>:<password>@localhost:<port>/crx/packmgr/service.jsp" // where to upload and install content files
+        "mvn_config_path": "C:\myProject\content" // path to maven settings file pom.xml
+      }
+      // other packages to install ...
     }
   ```
 
