@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cdejarlais/webdev-setup-tools-gems.git"
+    "url": "git+https://github.com/TMNG-T-Mobile/webdev-setup-tools-gems.git"
   },
   "keywords": [
     "gems"
@@ -27,5 +27,5 @@
   "peerDependencies": {
     "webdev-setup-tools": "1.x"
   },
-  "homepage": "https://github.com/cdejarlais/webdev-setup-tools-gems#readme"
+  "homepage": "https://github.com/TMNG-T-Mobile/webdev-setup-tools-gems#readme"
 }
