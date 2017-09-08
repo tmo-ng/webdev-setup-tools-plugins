@@ -21,7 +21,7 @@ This field typically has the following syntax:
 ```sh
 "web-dev-setup-tools": {
   "maven": "3.5.0",
-  // other package imports ...
+  // other packages to install ...
 }
 ```
 ## Usage
