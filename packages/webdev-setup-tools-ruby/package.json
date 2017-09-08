@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TMNG-T-Mobile/webdev-setup-tools-ruby.git"
+    "url": "git+https://github.com/tmo-ng/webdev-setup-tools-ruby.git"
   },
   "keywords": [
     "ruby"
@@ -28,5 +28,5 @@
     "semver": "5.x",
     "webdev-setup-tools": "1.x"
   },
-  "homepage": "https://github.com/TMNG-T-Mobile/webdev-setup-tools-ruby#readme"
+  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-ruby#readme"
 }
