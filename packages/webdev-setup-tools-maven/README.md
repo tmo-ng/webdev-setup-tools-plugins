@@ -8,7 +8,8 @@ This package is the maven plugin for webdev-setup-tools-core module.
   npm install webdev-setup-tools-maven --save
 
 ## Purpose
-Often , the
+To automate installation and all required system configurations for the Apache Maven software project management and comprehension tool.
+Additionally, to make all installation and configuration cross platform for Windows 7+, OSX, and Linux.
 
 ## Configuration
 
