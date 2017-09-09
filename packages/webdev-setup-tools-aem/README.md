@@ -7,7 +7,8 @@ This package is the aem installation plugin for webdev-setup-tools-core module.
 
   npm install webdev-setup-tools-aem --save
 ## Purpose
-Often , the
+To automate installation and all required system configurations for Adobe AEM software package.
+Additionally, to make all installation and configuration cross platform for Windows 7+, OSX, and Linux.
 
 ## Configuration
 
