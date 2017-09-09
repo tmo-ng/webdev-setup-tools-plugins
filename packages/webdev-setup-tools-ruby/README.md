@@ -8,8 +8,9 @@ This package is the ruby installation plugin for webdev-setup-tools-core module.
   npm install webdev-setup-tools-ruby --save
 
 ## Purpose
-Often , the
-
+To automate installation and all required system configurations for the Ruby software package. To automate
+Ruby Version Manager (RVM) installation and setup on OSX and Linux to support multiple Ruby versions on the same system.
+Additionally, to make all installation and configuration cross platform for Windows 7+, OSX, and Linux.
 ## Configuration
 
 This package should be installed in the
