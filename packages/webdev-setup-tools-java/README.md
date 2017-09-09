@@ -8,7 +8,8 @@ This package is the java installation plugin for webdev-setup-tools-core module.
   npm install webdev-setup-tools-java --save
 
 ## Purpose
-Often , the
+To provide step by step instructions for installing and configuring the official Oracle Java JDK that is used for Java development. This includes system path modification and environment variable setup on Windows 7+, OSX, and Linux.
+
 
 ## Configuration
 
