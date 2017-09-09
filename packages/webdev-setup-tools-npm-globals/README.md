@@ -8,7 +8,8 @@ This package is the npm plugin for webdev-setup-tools module. Installs required 
   npm install webdev-setup-tools-npm-globals --save
 
 ## Purpose
-Often , the
+To automate both the installation and updates of npm modules required by the current project.
+Additionally, to install the maximum compatible version of each module required by the current project using semantic version ranges provided for each module.
 
 ## Configuration
 
