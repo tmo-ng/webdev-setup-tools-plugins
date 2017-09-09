@@ -8,13 +8,13 @@ This package is the ruby gems installation plugin for webdev-setup-tools-core mo
   npm install webdev-setup-tools-gems --save
 
 ## Purpose
-Often , the
+To automate both the installation and updates of ruby gems required by the current project. Additionally, to install the maximum compatible version of each gem required by the current project using semantic version ranges provided for each gem.
 
 ## Configuration
 
 This package should be installed in the
 node modules folder located in the root of the project folder.
-It determines the packages to install from the "web-dev-setup-tools" field in the package.json in the project root.
+It determines the packages to install from the "web-dev-setup-tools" property in the package.json in the project root.
 This field typically has the following syntax:
 
 
