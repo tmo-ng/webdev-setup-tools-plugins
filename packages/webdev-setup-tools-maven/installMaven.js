@@ -14,13 +14,17 @@ let setEnvironmentVariables = unzippedFolderPath => {
     console.log('setting your maven system environment variables.');
     let outFile = (operatingSystem === 'darwin') ? '.bash_profile' : '.bashrc';
     let commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
+
     let setM2Home = (operatingSystem === 'win32') ? setup.setWindowsEnvironmentVariable('M2_HOME', '\'' + unzippedFolderPath + '\'') :
         'echo "export M2_HOME=/usr/local/maven" >> ' + homeDirectory + '/' + outFile;
+
     let setMavenHome = (operatingSystem === 'win32') ? setup.setWindowsEnvironmentVariable('MAVEN_HOME', '\'' + unzippedFolderPath + '\'') :
         'echo "export MAVEN_HOME=/usr/local/maven" >> ' + homeDirectory + '/' + outFile;
+
     let setSystemPath = (operatingSystem === 'win32') ? '$old_path = ' + setup.getWindowsEnvironmentVariable('path') +
         '; $new_path = $old_path + \';\' + \'' + unzippedFolderPath + '\' + \'\\bin\'; ' +
         setup.setWindowsEnvironmentVariable('path', '$new_path') : 'echo "export PATH=/usr/local/maven/bin:\\$PATH" >> ' + homeDirectory + '/' + outFile;
+
     let createSymbolicLinkToMaven = 'sudo ln -s ' + unzippedFolderPath + ' /usr/local/maven';
     let setAllPathVariables = setM2Home + commandSeparator + setMavenHome + commandSeparator + setSystemPath;
     setAllPathVariables = (operatingSystem === 'win32') ? setup.getSystemCommand(setAllPathVariables) : setAllPathVariables + commandSeparator + createSymbolicLinkToMaven;
