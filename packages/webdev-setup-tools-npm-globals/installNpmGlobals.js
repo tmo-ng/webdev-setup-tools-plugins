@@ -6,8 +6,9 @@ const os = require('os');
 
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
-const windowsProjectGlobals = setup.getProjectGlobals('node').globals.windows;
 const npmProjectGlobals = setup.getProjectGlobals('node').globals;
+const windowsProjectGlobals = npmProjectGlobals.windows;
+delete npmProjectGlobals.windows;
 const minutes = 60 * 1000;
 
 let installGlobalNpmDependencies = () => {
@@ -19,8 +20,8 @@ let installGlobalNpmDependencies = () => {
     let getGlobals = modules => {
         return setup.getAllUserGlobals(modules, /([a-z-A-Z]+)@([0-9]+(?:\.[0-9-a-z]+)+)/g);
     };
-    const npmListUserGlobals = setup.getSystemCommand('npm ls -g');
-    const npmInstallModuleAsGlobal = 'npm install -g';
+    let npmListUserGlobals = setup.getSystemCommand('npm ls -g');
+    let npmInstallModuleAsGlobal = 'npm install -g';
     console.log('getting installed node modules.');
     return setup.findUserGlobals(npmListUserGlobals, getGlobals)
         .catch(error => { // this will catch if the user has unmet dependencies on existing npm packages
@@ -28,7 +29,7 @@ let installGlobalNpmDependencies = () => {
         })
         .then(userGlobals => {
             userState.userGlobals = userGlobals;
-            if (operatingSystem === 'win32') { // flag for additional install requirements
+            if (operatingSystem === 'win32' && windowsProjectGlobals) {
                 userState.windows = {};
                 return setup.runListOfPromises(windowsProjectGlobals, findVersion)
                     .then(windowsRemotePackages => {
@@ -43,17 +44,17 @@ let installGlobalNpmDependencies = () => {
                     })
             }
         })
-        .then(() => setup.runListOfPromises(npmProjectGlobals, findVersion)
-            .then(npmRemotePackages => {
-                userState.npm = {};
-                let npmUpdates = setup.findRequiredAndOptionalUpdates(userState.userGlobals, npmProjectGlobals, npmRemotePackages);
-                userState.npm.required = npmUpdates.required;
-                userState.npm.optional = npmUpdates.optional;
-                if (userState.npm.required.length > 0) {
-                    console.log('installing required npm packages.');
-                    return setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.required, npmInstallModuleAsGlobal, '@')), formatOutput);
-                }
-            }))
+        .then(() => setup.runListOfPromises(npmProjectGlobals, findVersion))
+        .then(npmRemotePackages => {
+            userState.npm = {};
+            let npmUpdates = setup.findRequiredAndOptionalUpdates(userState.userGlobals, npmProjectGlobals, npmRemotePackages);
+            userState.npm.required = npmUpdates.required;
+            userState.npm.optional = npmUpdates.optional;
+            if (userState.npm.required.length > 0) {
+                console.log('installing required npm packages.');
+                return setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.required, npmInstallModuleAsGlobal, '@')), formatOutput);
+            }
+        })
         .then(() => {
             if (userState.windows && userState.windows.optional.length > 0) {
                 console.log('windows updates exist for the following packages: ');
