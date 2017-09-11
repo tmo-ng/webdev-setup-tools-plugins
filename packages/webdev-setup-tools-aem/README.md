@@ -34,9 +34,9 @@ This field typically has the following syntax:
           "BRT_content_07.zip": "https://sample.com/BRT_content_07.zip"
         },
         "aem_folder_path": "C:\" // where to install aem e.g. "C:\AEM"
-        "download_path": "C:\Users\Mkay\Downloads" // where to download content files
+        "download_path": "C:\Users\Mkay\Downloads\" // where to download content files
         "crx_endpoint": "http://<username>:<password>@localhost:<port>/crx/packmgr/service.jsp" // where to upload and install content files
-        "mvn_config_path": "C:\myProject\content" // path to maven settings file pom.xml
+        "mvn_config_path": "C:\myProject\content\" // path to maven settings file pom.xml
       }
       // other packages to install ...
     }

@@ -13,13 +13,16 @@ const homeDirectory = os.homedir();
 const findPortProcessWindows = 'netstat -a -n -o | findstr :4502';
 const findPortProcessOsxLinux = 'lsof -i TCP:4502';
 const seconds = 1000;
-const projectRoot = 2;
-const projectRootUpOne = 3;
-
+const folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
+const commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
+const aem_folder_path = aemGlobals.aem_folder_path + 'AEM' + folderSeparator;
+const download_path = aemGlobals.download_path;
+const crx_endpoint = aemGlobals.crx_endpoint;
+const mvn_config_path = aemGlobals.mvn_config_path;
 let installAemDependencies = () => {
     console.log('checking for Aem dependencies now..');
-    const windowsFindQuickstart = 'dir C:\\*crx-quickstart /ad /b /s';
-    const osxLinuxFindQuickstart = 'sudo find ' + homeDirectory + ' -type d -name "crx-quickstart"';
+    let windowsFindQuickstart = 'dir C:\\*crx-quickstart /ad /b /s';
+    let osxLinuxFindQuickstart = 'sudo find ' + homeDirectory + ' -type d -name "crx-quickstart"';
     let findQuickstart = (operatingSystem === 'win32') ? windowsFindQuickstart : osxLinuxFindQuickstart;
     return setup.executeSystemCommand(findQuickstart, { resolve: formatOutput.resolve })
         .then(osResponse => {
@@ -59,10 +62,9 @@ let waitForServerStartup = () => {
     });
 };
 
-let uploadAndInstallAllAemPackages = folderSeparator => {
+let uploadAndInstallAllAemPackages = () => {
     console.log('server started, installing local packages now...');
     let packageArray = Object.keys(aemGlobals.zip_files);
-    const crxInstallUrl = 'http://admin:admin@localhost:4502/crx/packmgr/service.jsp';
     return packageArray.reduce((promise, zipFile) => promise.then(() => new Promise((resolve) => {
         (function waitForEstablishedConnection() {
             let formData = {
@@ -71,7 +73,7 @@ let uploadAndInstallAllAemPackages = folderSeparator => {
                 force: 'true',
                 install: 'true'
             };
-            request.post({url: crxInstallUrl, formData: formData}, (err, httpResponse, body) => {
+            request.post({url: crx_endpoint, formData: formData}, (err, httpResponse, body) => {
                 if (err) {
                     console.log('upload and install failed with the following message:\n' + err);
                     setTimeout(waitForEstablishedConnection, 5 * seconds);
@@ -86,18 +88,18 @@ let uploadAndInstallAllAemPackages = folderSeparator => {
         })();
     })), Promise.resolve());
 };
-let mavenCleanAndAutoInstall = (commandSeparator, folderSeparator) => {
-    let outFile = setup.goUpDirectories(projectRootUpOne) + 'AEM' + folderSeparator + 'mvnOutput.log';
+let mavenCleanAndAutoInstall = () => {
+    let outFile = aem_folder_path + 'mvnOutput.log';
 
     //need to check whether JAVA_HOME has been set here for windows machines, if not, this can be executed with the command below
     let runMavenCleanInstall = (operatingSystem === 'win32' && !process.env.JAVA_HOME) ? '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME') + commandSeparator : '';
-    runMavenCleanInstall += 'cd ' + setup.goUpDirectories(projectRoot) + 't-mobile' + commandSeparator + 'mvn clean install \-PautoInstallPackage > ' + outFile;
+    runMavenCleanInstall += 'cd ' + mvn_config_path + commandSeparator + 'mvn clean install \-PautoInstallPackage > ' + outFile;
 
     console.log('running mvn clean and auto package install.\nOutput is being sent to the file ' + outFile);
     return setup.executeSystemCommand(setup.getSystemCommand(runMavenCleanInstall), formatOutput);
 };
-let copyNodeFile = folderSeparator => () => {
-    let nodeFolderPath = setup.goUpDirectories(projectRoot) + 't-mobile' + folderSeparator + 'node';
+let copyNodeFile = () => {
+    let nodeFolderPath = mvn_config_path + 'node';
     console.log('copying node file into ' + nodeFolderPath);
     return setup.executeSystemCommand('mkdir ' + nodeFolderPath, formatOutput)
         .then(() => {
@@ -107,16 +109,16 @@ let copyNodeFile = folderSeparator => () => {
             return setup.executeSystemCommand(copyNodeFile, formatOutput);
         });
 };
-let startAemServer = (commandSeparator, jarName) =>{
+let startAemServer = (jarName) =>{
     console.log('starting jar file AEM folder.');
-    let startServer = 'cd ' + setup.goUpDirectories(projectRootUpOne) + 'AEM' + commandSeparator;
+    let startServer = 'cd ' + aem_folder_path;
     startServer += (operatingSystem === 'win32') ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName + ' &';
     setup.executeSystemCommand(setup.getSystemCommand(startServer), formatOutput);
 };
-let downloadAllAemFiles = folderSeparator => () => {
+let downloadAllAemFiles = () => {
     return setup.runListOfPromises(aemGlobals.zip_files, (dependency, globalPackage) => {
         console.log('downloading aem dependency ' + dependency);
-        return setup.downloadPackage(globalPackage[dependency], homeDirectory + folderSeparator + 'Downloads' + folderSeparator + dependency);
+        return setup.downloadPackage(globalPackage[dependency], download_path + dependency);
     });
 };
 let stopAemProcess = () => {
@@ -134,31 +136,28 @@ let stopAemProcess = () => {
         });
 };
 let aemInstallationProcedure = () => {
-    let folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
-    let commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
-    let aemFolderPath = setup.goUpDirectories(projectRootUpOne) + 'AEM';
     let downloadFile = (dependency, globalPackage) => {
-        return setup.downloadPackage(globalPackage[dependency], aemFolderPath + folderSeparator + dependency)
+        return setup.downloadPackage(globalPackage[dependency], aem_folder_path + dependency)
             .then(() => dependency);
     };
-    let jarName = '';
-    console.log('creating AEM directory at ' + aemFolderPath);
-    return setup.executeSystemCommand('mkdir ' + aemFolderPath, formatOutput)
+    let authorFile = '';
+    console.log('creating AEM directory at ' + aem_folder_path);
+    return setup.executeSystemCommand('mkdir ' + aem_folder_path, formatOutput)
         .then(() => {
             console.log('downloading jar file into AEM folder.');
             return setup.runListOfPromises(aemGlobals.author, downloadFile);
         })
         .then(fileName => {
-            jarName = fileName;
+            authorFile = fileName;
             console.log('downloading license file into AEM folder.');
             return setup.runListOfPromises(aemGlobals.license, downloadFile);
         })
-        .then(copyNodeFile(folderSeparator))
-        .then(() => startAemServer(commandSeparator, jarName))
-        .then(downloadAllAemFiles(folderSeparator))
+        .then(copyNodeFile())
+        .then(() => startAemServer(authorFile))
+        .then(downloadAllAemFiles())
         .then(() => waitForServerStartup())
-        .then(() => uploadAndInstallAllAemPackages(folderSeparator))
-        .then(() => mavenCleanAndAutoInstall(commandSeparator, folderSeparator))
+        .then(() => uploadAndInstallAllAemPackages())
+        .then(() => mavenCleanAndAutoInstall())
         .then(() => stopAemProcess())
         .then(() => {
             console.log('successfully built project with mvn.');
