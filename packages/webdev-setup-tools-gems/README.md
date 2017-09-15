@@ -3,7 +3,7 @@
 webdev-setup-tools-gems
 =======================
 
-This package is the ruby gems installation plugin for webdev-setup-tools-core module.
+This is a plugin for [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools).
 
 ## Installing Npm Package
 
@@ -14,9 +14,7 @@ To automate both the installation and updates of ruby gems required by the curre
 
 ## Configuration
 
-This package should be installed in the
-node modules folder located in the root of the project folder.
-It determines the packages to install from the "web-dev-setup-tools" property in the package.json in the project root.
+This plugin determines the packages to install from the "web-dev-setup-tools" field in the package.json your project root.
 This field typically has the following syntax:
 
 
