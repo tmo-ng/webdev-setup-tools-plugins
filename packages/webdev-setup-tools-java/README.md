@@ -15,9 +15,7 @@ To provide step by step instructions for installing and configuring the official
 
 ## Configuration
 
-This package should be installed in the
-node modules folder located in the root of the project folder.
-It determines the packages to install from the "web-dev-setup-tools" field in the package.json in the project root.
+This plugin determines the packages to install from the "web-dev-setup-tools" field in the package.json your project root.
 This field typically has the following syntax:
 
 
