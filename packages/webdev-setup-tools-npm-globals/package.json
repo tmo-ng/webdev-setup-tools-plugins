@@ -2,7 +2,7 @@
   "name": "webdev-setup-tools-npm-globals",
   "version": "1.1.0",
   "description": "Set up npm packages for development tasks",
-  "main": "installNpmGlobals.js",
+  "main": "lib/installNpmGlobals.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
