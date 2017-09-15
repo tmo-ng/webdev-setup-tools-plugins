@@ -3,21 +3,20 @@
 webdev-setup-tools-npm-globals
 ======================
 
-This package is the npm plugin for webdev-setup-tools module. Installs required npm modules for development.
+This is a plugin for the [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools).
+This plugin enables easy installation of nodejs global packages as defined in your projects package.json.
 
 ## Installing Npm Package
 
   npm install webdev-setup-tools-npm-globals --save
 
 ## Purpose
-To automate both the installation and updates of npm modules required by the current project.
-Additionally, to install the maximum compatible version of each module required by the current project using semantic version ranges provided for each module.
+To automate both the installation and updates of global npm packages as required by your project.
+Additionally, to install the maximum compatible version of each module required by your project using semantic version ranges provided for each module.
 
 ## Configuration
 
-This package should be installed in the
-node modules folder located in the root of the project folder.
-It determines the packages to install from the "web-dev-setup-tools" field in the package.json in the project root.
+This plugin determines the packages to install from the "web-dev-setup-tools" field in the package.json your project root.
 This field typically has the following syntax:
 
 ```sh
@@ -39,7 +38,7 @@ This field typically has the following syntax:
 ```
 ## Usage
 
-  Install all required npm modules
+  Install all required global npm modules
   ```sh
   let setup_tools = require('webdev-setup-tools-npm');
   setup_tools.installNpmPackages();
@@ -52,9 +51,10 @@ This field typically has the following syntax:
 
 
 
-### Important Notes
+### Important Notes For Windows Users
+Due to built in Windows security features and restrictions, there are a number of additional steps that need to be taken by windows users.
 
-**Note:** In order to install this package, users will need to have administrative access on their computer.
+**Note:** In order to install most packages, users will need to have administrative access on their computer.
 
 **Note:** Users running Windows must have powershell script execution enabled. Powershell script execution
 is disabled by default as a security feature on many windows distributions. Script execution policy
@@ -68,7 +68,7 @@ a command prompt:
   powershell.exe -command "get-executionpolicy"
   ```
 
-**Note:**  To view the set the powershell execution policy for windows, copy and paste the following command in
+**Note:**  To set the powershell execution policy for windows, copy and paste the following command in
 a command prompt:
 
 ```sh
@@ -82,6 +82,7 @@ Users running windows 8 and above have all minimum powershell tools installed by
 **Note:** .net framework version 4.5 or above is required for script execution on Windows.
 This is a prerequisite for many modern software packages, but is not present on Windows 7
 out of the box.
+
 
 
 ## Release History
