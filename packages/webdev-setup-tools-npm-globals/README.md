@@ -3,7 +3,7 @@
 webdev-setup-tools-npm-globals
 ======================
 
-This is a plugin for the [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools).
+This is a plugin for [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools).
 This plugin enables easy installation of nodejs global packages as defined in your projects package.json.
 
 ## Installing Npm Package
