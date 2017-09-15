@@ -10,7 +10,7 @@ This is a plugin for [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-se
   npm install webdev-setup-tools-gems --save
 
 ## Purpose
-To automate both the installation and updates of ruby gems required by the current project. Additionally, to install the maximum compatible version of each gem required by the current project using semantic version ranges provided for each gem.
+To automate both the installation and updates of ruby gems required by your project. Additionally, to install the maximum compatible version of each gem required by your project using semantic version ranges provided for each gem.
 
 ## Configuration
 
