@@ -47,9 +47,7 @@ This field typically has the following syntax:
 
 ### Important Notes For Windows Users
 Due to built in Windows security features and restrictions, there are a number of additional steps that need to be taken by windows users.
-
-[`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools#readme)
-
+Please refer to the Important Notes For Windows Users section of [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools#readme) for more detailed instructions.
 
 ## Release History
 
