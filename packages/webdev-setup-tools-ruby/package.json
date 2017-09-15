@@ -2,7 +2,7 @@
   "name": "webdev-setup-tools-ruby",
   "version": "2.0.1",
   "description": "Set up ruby development tasks",
-  "main": "installRuby.js",
+  "main": "lib/installRuby.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
