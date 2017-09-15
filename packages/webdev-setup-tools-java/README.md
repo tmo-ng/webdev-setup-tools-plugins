@@ -3,7 +3,7 @@
 webdev-setup-tools-java
 =======================
 
-This package is the java installation plugin for webdev-setup-tools-core module.
+This is a plugin for [`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools).
 
 ## Installing Npm Package
 
