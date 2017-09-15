@@ -11,7 +11,7 @@ This plugin enables easy installation of nodejs global packages as defined in yo
   npm install webdev-setup-tools-npm-globals --save
 
 ## Purpose
-To automate both the installation and updates of global npm packages as required by your project.
+To automate both the installation and updates of global npm packages as required by your project. To manually install these packages with npm would typically take a separate installation command for each package in your project.
 Additionally, to install the maximum compatible version of each module required by your project using semantic version ranges provided for each module.
 
 ## Configuration
@@ -53,8 +53,8 @@ This field typically has the following syntax:
 
 ### Important Notes For Windows Users
 Due to built in Windows security features and restrictions, there are a number of additional steps that need to be taken by windows users.
-
-[`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools#readme)
+Please refer to the important notes section in the README for
+[`webdev-setup-tools `](https://github.com/tmo-ng/webdev-setup-tools#readme) for detailed windows notes.
 
 
 
