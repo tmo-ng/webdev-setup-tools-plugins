@@ -15,14 +15,15 @@ const findPortProcessOsxLinux = 'lsof -i TCP:4502';
 const seconds = 1000;
 const folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
 const commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
-const aem_folder_path = aemGlobals.aem_folder_path + 'AEM' + folderSeparator;
-const download_path = aemGlobals.download_path;
+const aem_absolute_path = (operatingSystem === 'win32') ? aemGlobals.aem_folder_path.windows : aemGlobals.aem_folder_path.unix;
+const aem_folder_path = aem_absolute_path + 'AEM' + folderSeparator;
+const download_path = (operatingSystem === 'win32') ? aemGlobals.download_path.windows : aemGlobals.download_path.unix;
 const crx_endpoint = aemGlobals.crx_endpoint;
-const mvn_config_path = aemGlobals.mvn_config_path;
+const mvn_config_path = (operatingSystem === 'win32') ? aemGlobals.mvn_config_path.windows : aemGlobals.mvn_config_path.unix;
 let installAemDependencies = () => {
     console.log('checking for Aem dependencies now..');
-    let windowsFindQuickstart = 'dir C:\\*crx-quickstart /ad /b /s';
-    let osxLinuxFindQuickstart = 'sudo find ' + homeDirectory + ' -type d -name "crx-quickstart"';
+    let windowsFindQuickstart = 'dir ' + aem_folder_path + ' /ad /b /s';
+    let osxLinuxFindQuickstart = 'sudo find ' + aem_folder_path + ' -type d -name "crx-quickstart"';
     let findQuickstart = (operatingSystem === 'win32') ? windowsFindQuickstart : osxLinuxFindQuickstart;
     return setup.executeSystemCommand(findQuickstart, { resolve: formatOutput.resolve })
         .then(osResponse => {
