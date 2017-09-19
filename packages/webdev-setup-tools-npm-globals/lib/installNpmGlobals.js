@@ -39,7 +39,7 @@ let installGlobalNpmDependencies = () => {
                         if (userState.windows.required.length > 0) {
                             console.log('installing required windows packages.');
                             return Promise.race([setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.windows.required, npmInstallModuleAsGlobal, '@')), { resolve: formatOutput.resolve }),
-                                setup.handleUnresponsiveSystem(2 * minutes, 'The system is not responding.\ndo you want to keep waiting (y/n)?  ')]);
+                                setup.handleUnresponsiveSystem(5 * minutes, 'The system is not responding.\ndo you want to keep waiting (y/n)?  ')]);
                         }
                     })
             }
