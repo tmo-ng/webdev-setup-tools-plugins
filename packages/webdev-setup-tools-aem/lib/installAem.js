@@ -18,11 +18,12 @@ const commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
 const aem_install_dir = aemGlobals.aem_folder_path || '';
 const download_path_dir = aemGlobals.download_path || '';
 const mvn_config_dir = aemGlobals.mvn_config_path || '';
+
 const aem_dir = (aem_install_dir.endsWith(folderSeparator)) ? 'AEM' + folderSeparator : folderSeparator + 'AEM' + folderSeparator;
 const aem_folder_path = aem_install_dir + aem_dir;
-const download_path = download_path_dir;
+const download_path = (download_path_dir.endsWith(folderSeparator)) ? download_path_dir : download_path_dir + folderSeparator;
 const crx_endpoint = aemGlobals.crx_endpoint;
-const mvn_config_path = mvn_config_dir;
+const mvn_config_path = (mvn_config_dir.endsWith(folderSeparator)) ? mvn_config_dir : mvn_config_dir + folderSeparator;
 let installAemDependencies = () => {
     console.log('checking for Aem dependencies now..');
     if (isAemConfigValid()) {
@@ -38,7 +39,7 @@ let waitForServerStartup = () => {
     console.log('waiting for server to startup...');
     let portListenCommand = (operatingSystem === 'win32') ? findPortProcessWindows : findPortProcessOsxLinux;
     return new Promise((resolve) => {
-        (function waitForEstablishedConnection() {
+        let waitForEstablishedConnection = () => {
             return setup.executeSystemCommand(portListenCommand, {resolve: formatOutput.resolve})
                 .then(osResponse => {
                     if (osResponse.includes('ESTABLISHED')) {
@@ -53,7 +54,8 @@ let waitForServerStartup = () => {
                     console.log('did not find any process at port 4502, checking again.');
                     setTimeout(waitForEstablishedConnection, 5 * seconds);
                 });
-        })();
+        };
+        waitForEstablishedConnection();
     });
 };
 
@@ -61,7 +63,7 @@ let uploadAndInstallAllAemPackages = () => {
     console.log('server started, installing local packages now...');
     let packageArray = Object.keys(aemGlobals.zip_files);
     return packageArray.reduce((promise, zipFile) => promise.then(() => new Promise((resolve) => {
-        (function waitForEstablishedConnection() {
+        let waitForUploadSuccess = () => {
             let formData = {
                 file: fs.createReadStream(homeDirectory + folderSeparator + 'Downloads' + folderSeparator + zipFile),
                 name: zipFile,
@@ -71,16 +73,17 @@ let uploadAndInstallAllAemPackages = () => {
             request.post({url: crx_endpoint, formData: formData}, (err, httpResponse, body) => {
                 if (err) {
                     console.log('upload and install failed with the following message:\n' + err);
-                    setTimeout(waitForEstablishedConnection, 5 * seconds);
+                    setTimeout(waitForUploadSuccess, 5 * seconds);
                 } else if (httpResponse.statusCode === 200) {
                     console.log('Upload successful!  Server responded with:', body);
                     resolve(body);
                 } else {
                     console.log('Upload failed,  Server responded with:', body);
-                    setTimeout(waitForEstablishedConnection, 5 * seconds);
+                    setTimeout(waitForUploadSuccess, 5 * seconds);
                 }
             });
-        })();
+        };
+        waitForUploadSuccess();
     })), Promise.resolve());
 };
 let mavenCleanAndAutoInstall = () => {
