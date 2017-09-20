@@ -7,6 +7,7 @@ const os = require('os');
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const requiredMavenVersion = setup.getProjectGlobals('maven');
+const globalMavenObject = {maven: requiredMavenVersion};
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const homeDirectory = os.homedir();
 
@@ -30,22 +31,18 @@ let setEnvironmentVariables = unzippedFolderPath => {
     setAllPathVariables = (operatingSystem === 'win32') ? setup.getSystemCommand(setAllPathVariables) : setAllPathVariables + commandSeparator + createSymbolicLinkToMaven;
     return setup.executeSystemCommand(setAllPathVariables, formatOutput);
 };
-let installMavenOnHost = () => {
-    let downloadPattern = (operatingSystem === 'win32') ? /http[^"]+maven-([0-9.]+)-bin\.zip/g : /http[^"]+maven-([0-9.]+)-bin\.tar\.gz/g;
+let installMavenOnHost = (mavenDownload) => {
+    let remotePath = mavenDownload.downloadHyperlink;
+    let fileName = remotePath.substring(remotePath.lastIndexOf('/') + 1, remotePath.length);
+
     let unzippedFolderPath = (operatingSystem === 'win32') ?  'C:\\Program Files\\' : '/usr/local/';
-    let mavenUrl = 'https://maven.apache.org/download.cgi';
-    let mavenVersion;
-    return setup.getVersionWithRequest(mavenUrl, downloadPattern, requiredMavenVersion) // scrape the maven homepage to get version and download link
-        .then(download => {
-            let path = download.downloadHyperlink;
-            console.log('downloading maven version from the following link:\n' + path);
-            let fileName = path.substring(path.lastIndexOf('/') + 1, path.length);
-            unzippedFolderPath += fileName.substring(0, fileName.indexOf(download.version) + download.version.length);
-            let folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
-            let downloadPath = homeDirectory + folderSeparator + 'Downloads' + folderSeparator + fileName;
-            mavenVersion = download.version;
-            return setup.downloadPackage(path, downloadPath);
-        })
+    unzippedFolderPath += fileName.substring(0, fileName.indexOf(mavenDownload.version) + mavenDownload.version.length);
+
+    let folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
+    let downloadPath = homeDirectory + folderSeparator + 'Downloads' + folderSeparator + fileName;
+    let mavenVersion = mavenDownload.version;
+    console.log('downloading maven version from the following link:\n' + remotePath);
+    return setup.downloadPackage(remotePath, downloadPath)
         .then(downloadPath => { // unzip the downloaded package
             let unzipCommand;
             if (operatingSystem === 'win32') {
@@ -67,7 +64,10 @@ let installMavenOnHost = () => {
         });
 };
 let installMaven = () => {
-    const checkMavenVersion = setup.getSystemCommand('mvn -v');
+    let checkMavenVersion = setup.getSystemCommand('mvn -v');
+    let localMaven = {};
+    let downloadPattern = (operatingSystem === 'win32') ? /http[^"]+maven-([0-9.]+)-bin\.zip/g : /http[^"]+maven-([0-9.]+)-bin\.tar\.gz/g;
+    let mavenUrl = 'https://maven.apache.org/download.cgi';
     return setup.executeSystemCommand(checkMavenVersion, {resolve: formatOutput.resolve})
         .catch(() => {
             console.log('No version of maven detected. Installing maven now.');
@@ -75,8 +75,26 @@ let installMaven = () => {
         })
         .then(mavenVersion => {
             if (mavenVersion) {
-                console.log('found maven version ' + mavenVersion.match(versionPattern)[0]);
+                localMaven.maven = mavenVersion.match(versionPattern)[0];
             }
+        })
+        .then(() => setup.getVersionWithRequest(mavenUrl, downloadPattern, requiredMavenVersion))
+        .then(remoteMaven => {
+            let mavenUpdates = setup.findRequiredAndOptionalUpdates(localMaven, globalMavenObject, [{name: 'maven', highestCompatibleVersion: remoteMaven.version}]);
+            if (mavenUpdates.required.length > 0) {
+                console.log('installing required maven update now.');
+                return installMavenOnHost(remoteMaven);
+            } else if (mavenUpdates.optional.length > 0) {
+                return setup.confirmOptionalInstallation('a newer maven version is now available.\nDo you want to upgrade now (y/n)?  ', () => installMavenOnHost(remoteMaven));
+            }
+        })
+        .then(remoteVersion => {
+            let newMavenVersion = (remoteVersion) ? remoteVersion : localMaven.maven;
+            console.log('maven setup complete. default version is ' + newMavenVersion + '.');
+
+        })
+        .catch(error => {
+            console.log('ruby install failed with the following message:\n' + error);
         });
 };
 
