@@ -86,6 +86,8 @@ let installMaven = () => {
                 return installMavenOnHost(remoteMaven);
             } else if (mavenUpdates.optional.length > 0) {
                 return setup.confirmOptionalInstallation('a newer maven version is now available.\nDo you want to upgrade now (y/n)?  ', () => installMavenOnHost(remoteMaven));
+            } else {
+                console.log('your local maven version is up to date.');
             }
         })
         .then(() => {
