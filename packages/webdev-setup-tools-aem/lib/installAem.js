@@ -116,7 +116,7 @@ let copyNodeFile = () => {
 };
 let startAemServer = (jarName) =>{
     console.log('starting jar file AEM folder.');
-    let startServer = 'cd ' + aem_folder_path;
+    let startServer = 'cd ' + aem_folder_path + commandSeparator;
     startServer += (operatingSystem === 'win32') ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName + ' &';
     setup.executeSystemCommand(setup.getSystemCommand(startServer), formatOutput);
 };
