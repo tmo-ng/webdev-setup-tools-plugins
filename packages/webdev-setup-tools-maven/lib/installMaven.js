@@ -88,13 +88,12 @@ let installMaven = () => {
                 return setup.confirmOptionalInstallation('a newer maven version is now available.\nDo you want to upgrade now (y/n)?  ', () => installMavenOnHost(remoteMaven));
             }
         })
-        .then(remoteVersion => {
-            let newMavenVersion = (remoteVersion) ? remoteVersion : localMaven.maven;
-            console.log('maven setup complete. default version is ' + newMavenVersion + '.');
+        .then(() => {
+            console.log('maven setup complete.');
 
         })
         .catch(error => {
-            console.log('ruby install failed with the following message:\n' + error);
+            console.log('maven install failed with the following message:\n' + error);
         });
 };
 
