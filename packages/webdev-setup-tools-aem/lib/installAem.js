@@ -150,9 +150,9 @@ let aemInstallationProcedure = () => {
             console.log('downloading license file into AEM folder.');
             return setup.runListOfPromises(aemGlobals.license, downloadFile);
         })
-        .then(copyNodeFile())
+        .then(() => copyNodeFile())
         .then(() => startAemServer(authorFile))
-        .then(downloadAllAemFiles())
+        .then(() => downloadAllAemFiles())
         .then(() => waitForServerStartup())
         .then(() => uploadAndInstallAllAemPackages())
         .then(() => mavenCleanAndAutoInstall())
