@@ -15,29 +15,24 @@ const findPortProcessOsxLinux = 'lsof -i TCP:4502';
 const seconds = 1000;
 const folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
 const commandSeparator = (operatingSystem === 'win32') ? '; ' : ' && ';
-const aem_folder_path = aemGlobals.aem_folder_path + 'AEM' + folderSeparator;
-const download_path = aemGlobals.download_path;
+const aem_install_dir = aemGlobals.aem_folder_path || '';
+const download_path_dir = aemGlobals.download_path || '';
+const mvn_config_dir = aemGlobals.mvn_config_path || '';
+const aem_dir = (aem_install_dir.endsWith(folderSeparator)) ? 'AEM' + folderSeparator : folderSeparator + 'AEM' + folderSeparator;
+const aem_folder_path = aem_install_dir + aem_dir;
+const download_path = download_path_dir;
 const crx_endpoint = aemGlobals.crx_endpoint;
-const mvn_config_path = aemGlobals.mvn_config_path;
+const mvn_config_path = mvn_config_dir;
 let installAemDependencies = () => {
     console.log('checking for Aem dependencies now..');
-    let windowsFindQuickstart = 'dir ' + aem_folder_path + '*crx-quickstart /ad /b /s';
-    let osxLinuxFindQuickstart = 'sudo find ' + aem_folder_path + ' -type d -name "crx-quickstart"';
-    let findQuickstart = (operatingSystem === 'win32') ? windowsFindQuickstart : osxLinuxFindQuickstart;
-    return setup.executeSystemCommand(findQuickstart, { resolve: formatOutput.resolve })
-        .then(osResponse => {
-            if (osResponse !== '') {
-                console.log('found an existing aem installation at ' + osResponse.trim() + '.');
-                return;
-            }
-            console.log('missing aem dependencies, installing all aem dependencies now...');
-            return aemInstallationProcedure();
-        })
-        .catch(() => {
-            // AEM is not installed, run full aem installation procedure here
-            console.log('installing all aem dependencies now...');
-            return aemInstallationProcedure();
-        });
+    if (isAemConfigValid()) {
+        return aemInstallationProcedure();
+    } else {
+        console.log('Aem installation is not possible');
+    }
+};
+let isAemConfigValid = () => {
+    return fs.existsSync(mvn_config_dir) && fs.existsSync(aem_install_dir) && fs.existsSync(download_path_dir) && !fs.existsSync(aem_folder_path);
 };
 let waitForServerStartup = () => {
     console.log('waiting for server to startup...');
