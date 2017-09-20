@@ -29,7 +29,8 @@ let installAemDependencies = () => {
     if (isAemConfigValid()) {
         return aemInstallationProcedure();
     } else {
-        console.log('Aem installation is not possible');
+        console.log('Aem installation is not possible with your current configuration.\n' +
+            'Check your directories are named properly and for an existing AEM installation');
     }
 };
 let isAemConfigValid = () => {
@@ -141,6 +142,7 @@ let aemInstallationProcedure = () => {
     let authorFile = '';
     console.log('creating AEM directory at ' + aem_folder_path);
     return setup.executeSystemCommand('mkdir ' + aem_folder_path, formatOutput)
+        .then(() => copyNodeFile())
         .then(() => {
             console.log('downloading jar file into AEM folder.');
             return setup.runListOfPromises(aemGlobals.author, downloadFile);
@@ -150,7 +152,6 @@ let aemInstallationProcedure = () => {
             console.log('downloading license file into AEM folder.');
             return setup.runListOfPromises(aemGlobals.license, downloadFile);
         })
-        .then(() => copyNodeFile())
         .then(() => startAemServer(authorFile))
         .then(() => downloadAllAemFiles())
         .then(() => waitForServerStartup())
