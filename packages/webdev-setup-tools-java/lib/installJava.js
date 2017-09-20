@@ -72,11 +72,12 @@ let installJava = () => {
             resolve(data);
         }
     };
-    console.log('checking java version compatibility.');
     let checkJavaCompilerVersion = setup.getSystemCommand('javac -version'); // important to test the java compiler
+
+    console.log('checking java version compatibility.');
     return setup.executeSystemCommand(checkJavaCompilerVersion, javaOutputFormatting)
         .catch(() => { //java commands are redirected to stderr in both windows and linux environments
-            console.log('no jdk version found on this computer');
+            console.log('no jdk version found in this computers System Path.');
             return walkThroughjdkInstall();
         })
         .then(javaVersion => {
@@ -89,6 +90,9 @@ let installJava = () => {
                 console.log('no compatible jdk version found on this computer');
                 return walkThroughjdkInstall();
             }
+        })
+        .catch(error => {
+            console.log('Jdk installation failed with the following message:\n' + error);
         });
 };
 
