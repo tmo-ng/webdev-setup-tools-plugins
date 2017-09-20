@@ -9,7 +9,6 @@ const os = require('os');
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const aemGlobals = setup.getProjectGlobals('aem');
-const homeDirectory = os.homedir();
 const findPortProcessWindows = 'netstat -a -n -o | findstr :4502';
 const findPortProcessOsxLinux = 'lsof -i TCP:4502';
 const seconds = 1000;
@@ -66,7 +65,7 @@ let uploadAndInstallAllAemPackages = () => {
     return packageArray.reduce((promise, zipFile) => promise.then(() => new Promise((resolve) => {
         let waitForUploadSuccess = () => {
             let formData = {
-                file: fs.createReadStream(homeDirectory + folderSeparator + 'Downloads' + folderSeparator + zipFile),
+                file: fs.createReadStream(download_path + zipFile),
                 name: zipFile,
                 force: 'true',
                 install: 'true'
@@ -91,7 +90,9 @@ let mavenCleanAndAutoInstall = () => {
     let outFile = aem_folder_path + 'mvnOutput.log';
 
     //need to check whether JAVA_HOME has been set here for windows machines, if not, this can be executed with the command below
-    let runMavenCleanInstall = (operatingSystem === 'win32' && !process.env.JAVA_HOME) ? '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME') + commandSeparator : '';
+    let loadJavaHome = '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME');
+
+    let runMavenCleanInstall = (operatingSystem === 'win32') ? loadJavaHome + commandSeparator : '';
     runMavenCleanInstall += 'cd ' + mvn_config_path + commandSeparator + 'mvn clean install \-PautoInstallPackage > ' + outFile;
 
     console.log('running mvn clean and auto package install.\nOutput is being sent to the file ' + outFile);
