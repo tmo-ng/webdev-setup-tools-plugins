@@ -55,7 +55,7 @@ let walkThroughjdkInstall = () => {
             }
         })
         .then(() => {
-            return setup.displayUserPrompt('open a new terminal then type "javac -v".\nIf this was done correctly, you should see output like "javac 1.8.0_141".');
+            return setup.displayUserPrompt('open a new terminal then type "javac -version".\nIf this was done correctly, you should see output like "javac 1.8.0_141".');
         })
         .then(() => {
             return setup.displayUserPrompt('This concludes the java jdk setup.');
