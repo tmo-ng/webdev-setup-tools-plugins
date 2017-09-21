@@ -12,6 +12,7 @@ delete npmProjectGlobals.windows;
 const minutes = 60 * 1000;
 
 let installGlobalNpmDependencies = () => {
+
     let userState = {};
     let findVersion = (dependency, projectGlobals) => {
         let getNpmPackageVersions = setup.getSystemCommand('npm info ' + dependency + ' versions --json');
