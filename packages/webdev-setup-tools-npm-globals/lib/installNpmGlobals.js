@@ -18,7 +18,8 @@ let installGlobalNpmDependencies = () => {
         return setup.findHighestCompatibleVersion(dependency, projectGlobals, getNpmPackageVersions);
     };
     let getGlobals = modules => {
-        return setup.getAllUserGlobals(modules, /([a-z-A-Z]+)@([0-9]+(?:\.[0-9-a-z]+)+)/g);
+        let npmPackageNamePattern = /([@a-z-A-Z/.0-9]+)@([0-9]+(?:\.[0-9-a-z]+)+)/g;
+        return setup.getAllUserGlobals(modules, npmPackageNamePattern);
     };
     let npmListUserGlobals = setup.getSystemCommand('npm ls -g');
     let npmInstallModuleAsGlobal = 'npm install -g';
