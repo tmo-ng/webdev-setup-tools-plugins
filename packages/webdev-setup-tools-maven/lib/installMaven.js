@@ -71,7 +71,6 @@ let installMaven = () => {
     return setup.executeSystemCommand(checkMavenVersion, {resolve: formatOutput.resolve})
         .catch(() => {
             console.log('No version of maven detected. Installing maven now.');
-            return installMavenOnHost();
         })
         .then(mavenVersion => {
             if (mavenVersion) {
