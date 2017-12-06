@@ -15,7 +15,7 @@ let installGlobalNpmDependencies = () => {
 
     let userState = {};
     let findVersion = (dependency, projectGlobals) => {
-        let getNpmPackageVersions = setup.getSystemCommand('npm info ' + dependency + ' versions --json');
+        let getNpmPackageVersions = setup.getSystemCommand('npm info ' + dependency + ' versions --json --registry=https://registry.npmjs.org/');
         return setup.findHighestCompatibleVersion(dependency, projectGlobals, getNpmPackageVersions);
     };
     let getGlobals = modules => {
