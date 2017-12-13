@@ -6,10 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tmo-ng/webdev-setup-tools-plugins.git"
-  },
+  "repository": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-maven",
   "keywords": [
     "maven"
   ],
@@ -21,7 +18,7 @@
   "peerDependencies": {
     "webdev-setup-tools": "1.x"
   },
-  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins#readme",
+  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-maven#readme",
   "bugs": {
     "url": "https://github.com/tmo-ng/webdev-setup-tools-plugins/issues"
   },

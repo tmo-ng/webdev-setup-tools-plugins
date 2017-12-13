@@ -6,10 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tmo-ng/webdev-setup-tools-plugins.git"
-  },
+  "repository": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-java",
   "keywords": [
     "java"
   ],
@@ -28,5 +25,5 @@
     "semver": "5.x",
     "webdev-setup-tools": "1.x"
   },
-  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins#readme"
+  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-java#readme"
 }

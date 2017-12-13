@@ -6,10 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tmo-ng/webdev-setup-tools-plugins.git"
-  },
+  "repository": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-aem",
   "keywords": [
     "aem"
   ],
@@ -25,9 +22,8 @@
   "bugs": {
     "url": "https://github.com/tmo-ng/webdev-setup-tools-plugins/issues"
   },
-  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins#readme",
+  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-aem#readme",
   "directories": {
     "lib": "lib"
-  },
-  "author": "Christopher DeJarlais"
+  }
 }
