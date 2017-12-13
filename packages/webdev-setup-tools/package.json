@@ -5,7 +5,7 @@
   "description": "Setup and install packages required for many web development tasks",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tmo-ng/webdev-setup-tools.git"
+    "url": "git+https://github.com/tmo-ng/webdev-setup-tools-plugins.git"
   },
   "keywords": [
     "aem",
@@ -13,24 +13,24 @@
     "maven",
     "java"
   ],
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/tmo-ng/webdev-setup-tools/blob/master/LICENSE-MIT.md"
-    }
-  ],
+  "license": "MIT",
   "peerDependencies": {
     "semver": "5.x",
     "request": "2.x"
   },
   "contributors": [
-    {
-      "name": "Kendrick Burson",
-      "email": "Kendrick.Burson3@T-Mobile.com"
-    },
-    {
-      "name": "Chris DeJarlais",
-      "email": "Christopher.DeJarlais1@T-Mobile.com"
-    }
-  ]
+    "Kendrick Burson <Kendrick.Burson3@T-Mobile.com>",
+    "Chris DeJarlais <Christopher.DeJarlais1@T-Mobile.com>"
+  ],
+  "bugs": {
+    "url": "https://github.com/tmo-ng/webdev-setup-tools-plugins/issues"
+  },
+  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins#readme",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": ""
 }

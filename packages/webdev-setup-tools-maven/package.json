@@ -8,24 +8,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tmo-ng/webdev-setup-tools-maven.git"
+    "url": "git+https://github.com/tmo-ng/webdev-setup-tools-plugins.git"
   },
   "keywords": [
     "maven"
   ],
   "contributors": [
-    {
-      "name": "Kendrick Burson",
-      "email": "Kendrick.Burson3@T-Mobile.com"
-    },
-    {
-      "name": "Chris DeJarlais",
-      "email": "Christopher.DeJarlais1@T-Mobile.com"
-    }
+    "Kendrick Burson <Kendrick.Burson3@T-Mobile.com>",
+    "Chris DeJarlais <Christopher.DeJarlais1@T-Mobile.com>"
   ],
   "license": "MIT",
   "peerDependencies": {
     "webdev-setup-tools": "1.x"
   },
-  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-maven#readme"
+  "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins#readme",
+  "bugs": {
+    "url": "https://github.com/tmo-ng/webdev-setup-tools-plugins/issues"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "author": ""
 }
