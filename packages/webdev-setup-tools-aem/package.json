@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-aem",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Set up aem dependencies for development tasks",
   "main": "lib/installAem.js",
   "scripts": {
