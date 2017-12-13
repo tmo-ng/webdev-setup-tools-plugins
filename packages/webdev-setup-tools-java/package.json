@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-java",
-  "version": "2.0.1",
+  "version": "3.0.1",
   "description": "Walk through java jdk download and setup",
   "main": "lib/installJava.js",
   "scripts": {

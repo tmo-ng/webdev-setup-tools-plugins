@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-aem",
-  "version": "2.0.1",
+  "version": "3.0.1",
   "description": "Set up aem dependencies for development tasks",
   "main": "lib/installAem.js",
   "scripts": {
@@ -16,8 +16,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools": "1.x",
-    "request": "2.x"
+    "request": "2.x",
+    "webdev-setup-tools": "1.x"
   },
   "bugs": {
     "url": "https://github.com/tmo-ng/webdev-setup-tools-plugins/issues"

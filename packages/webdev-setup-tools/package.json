@@ -1,7 +1,7 @@
 {
   "main": "lib/webdev-setup-tools.js",
   "name": "webdev-setup-tools",
-  "version": "1.1.0",
+  "version": "3.0.1",
   "description": "Setup and install packages required for many web development tasks",
   "repository": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools",
   "keywords": [
@@ -12,8 +12,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "semver": "5.x",
-    "request": "2.x"
+    "request": "2.x",
+    "semver": "5.x"
   },
   "contributors": [
     "Kendrick Burson <Kendrick.Burson3@T-Mobile.com>",
