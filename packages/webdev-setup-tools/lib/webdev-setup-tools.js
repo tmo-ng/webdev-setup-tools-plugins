@@ -304,6 +304,55 @@ let getMissingVariables = (setuprcPath, arrayOfConfigVariables) => {
 let shouldModifyGitIgnore = (isAGitRepo, gitIgnorePath, fileName) => {
   return isAGitRepo && (!fs.existsSync(gitIgnorePath) || !fs.readFileSync(gitIgnorePath, 'utf8').includes(fileName));
 };
+
+let getConfigVariablesCustomPrompt = (promptObjects , validateInputFunc) => {
+
+  let validationFunction = (validateInputFunc) ? validateInputFunc : input => input;
+  let isAGitRepo = fs.existsSync('../.git');
+  if (!isAGitRepo) {
+    let alertNonGitUser = 'It looks like you are not using a git repository.\n' +
+      'It will be your responsibility to ignore the .setuprc that is created by this procedure.\n' +
+      'Check with your version control system documentation for this information.';
+    console.log(alertNonGitUser);
+  }
+  let folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
+  let lineSeparator = os.EOL;
+
+  let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
+  let existingSetupRc = fs.existsSync(setuprcPath);
+  if (shouldModifyGitIgnore(isAGitRepo, '../.gitignore', '.setuprc')) {
+    let gitIgnorePath = fs.realpathSync('../') + folderSeparator + '.gitignore';
+    fs.appendFileSync(gitIgnorePath, '.setuprc' + lineSeparator);
+  }
+  let userConfigVariables = [];
+  let userVariables = {};
+  let missingConfigVars = (existingSetupRc) ? [] : promptObjects;
+  if (existingSetupRc) {
+    promptObjects.forEach(function (prompt) {
+      userConfigVariables.push(prompt['var_name']);
+    });
+    let configVariables = getMissingVariables(setuprcPath, userConfigVariables);
+    userVariables = configVariables.foundVariables;
+    promptObjects.forEach(function (prompt) {
+      if (!userVariables.hasOwnProperty(prompt['var_name'])) {
+        missingConfigVars.push(prompt)
+      }
+    });
+
+  }
+  return getVariablesWithPrompt(missingConfigVars, validationFunction)
+    .then(userResponseMap => { // write text to file then return user responses
+      if (missingConfigVars.length === 0) {
+        return userVariables;
+      }
+      let fileText = '';
+      Object.keys(userResponseMap).forEach(variable => {
+        fileText += variable + '=' + userResponseMap[variable] + lineSeparator;
+      });
+      fs.appendFileSync(setuprcPath, fileText);
+      return Object.assign(userVariables, userResponseMap);
+    });
+};
 // requestedConfigVariables - an array of string variables to be found
 // validateInputFunc - function used to accept or reject user input for the configuration variables
 let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
@@ -369,5 +418,6 @@ module.exports = {
   goUpDirectories: goUpDirectories,
   endProcessWithMessage: endProcessWithMessage,
   getConfigVariables: getConfigVariables,
-  getVariablesWithPrompt: getVariablesWithPrompt
+  getVariablesWithPrompt: getVariablesWithPrompt,
+  getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt
 };

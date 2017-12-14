@@ -164,9 +164,9 @@ let downloadAllAemFiles = () => {
     }
   });
   let useExistingFiles = 'Existing AEM content files were found, would you like to use these files(y/n)? ';
-  return Promise.resolve((previousInstall) ? setup.confirmOptionalInstallation(useExistingFiles, () => missingFiles) : aemGlobals.zip_files)
+  return Promise.resolve((previousInstall) ? setup.confirmOptionalInstallation(useExistingFiles, () => missingFiles) : missingFiles)
     .then(files => {
-      let downloads = files || aemGlobals.zip_files;
+      let downloads = files || missingFiles;
       return setup.runListOfPromises(downloads, (dependency, globalPackage) => {
         console.log('downloading aem dependency ' + dependency);
         return setup.downloadPackage(globalPackage[dependency], download_path + dependency);
