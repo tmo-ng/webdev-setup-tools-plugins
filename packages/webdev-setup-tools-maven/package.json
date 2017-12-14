@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-maven",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "Setup maven for development",
   "main": "lib/installMaven.js",
   "scripts": {
@@ -16,7 +16,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools": "3.x"
+    "webdev-setup-tools": "4.x"
   },
   "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-maven#readme",
   "bugs": {

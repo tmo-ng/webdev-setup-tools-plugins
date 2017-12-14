@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-gems",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "Set up required gems for development",
   "main": "lib/installGems.js",
   "scripts": {
@@ -22,7 +22,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools": "3.x"
+    "webdev-setup-tools": "4.x"
   },
   "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-gems#readme"
 }

@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-ruby",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "Set up ruby development tasks",
   "main": "lib/installRuby.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "license": "MIT",
   "peerDependencies": {
     "semver": "5.x",
-    "webdev-setup-tools": "3.x"
+    "webdev-setup-tools": "4.x"
   },
   "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-ruby#readme"
 }

@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-java",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "Walk through java jdk download and setup",
   "main": "lib/installJava.js",
   "scripts": {
@@ -23,7 +23,7 @@
   "license": "MIT",
   "peerDependencies": {
     "semver": "5.x",
-    "webdev-setup-tools": "3.x"
+    "webdev-setup-tools": "4.x"
   },
   "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-java#readme"
 }
