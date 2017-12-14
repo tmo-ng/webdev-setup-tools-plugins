@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-gems",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Set up required gems for development",
   "main": "lib/installGems.js",
   "scripts": {
