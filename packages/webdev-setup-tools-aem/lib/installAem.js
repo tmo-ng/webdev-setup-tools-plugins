@@ -12,7 +12,7 @@ const aemGlobals = setup.getProjectGlobals('aem');
 const port = aemGlobals.port || '4502';
 const content_files = aemGlobals.zip_files || aemGlobals.content_files;
 const findPortProcessWindows = 'netstat -a -n -o | findstr :' + port;
-const findPortProcessOsxLinux = 'lsof -i TCP:' + port;
+const findPortProcessOsxLinux = 'lsof -i TCP:' + port + ' | grep LISTEN';
 const seconds = 1000;
 const windows = (operatingSystem === 'win32');
 const folderSeparator = (windows) ? '\\' : '/';
@@ -190,7 +190,7 @@ let stopAemProcess = () => {
   let findPortProcess = (windows) ? findPortProcessWindows : findPortProcessOsxLinux;
   return setup.executeSystemCommand(findPortProcess, {resolve: formatOutput.resolve})
     .then(output => {
-      let process = /LISTENING.*?([0-9]+)/g.exec(output);
+      let process = (windows) ? /LISTENING.*?([0-9]+)/g.exec(output) : /java.*?([0-9]+)/g.exec(output);
       return process[1]; // return the process id
     })
     .then(processId => {
