@@ -128,14 +128,13 @@ let findHighestCompatibleVersion = (globalPackage, projectGlobals, listVersionsC
   return executeSystemCommand(listVersionsCommand, matchVersionsOptions);
 };
 
-let confirmOptionalInstallation = (displayPrompt, installCallback) => {
+let confirmOptionalInstallation = (displayPrompt, acceptCallback, denyCallback) => {
   return displayUserPrompt(displayPrompt)
     .then(response => {
       if (!response.startsWith('n')) {
-        console.log('updating packages');
-        return installCallback();
-      } else {
-        console.log('update aborted');
+        return acceptCallback();
+      } else if (denyCallback) {
+        return denyCallback();
       }
     });
 };

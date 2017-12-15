@@ -10,6 +10,7 @@ const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
 const aemGlobals = setup.getProjectGlobals('aem');
 const port = aemGlobals.port || '4502';
+const content_files = aemGlobals.zip_files || aemGlobals.content_files;
 const findPortProcessWindows = 'netstat -a -n -o | findstr :' + port;
 const findPortProcessOsxLinux = 'lsof -i TCP:' + port;
 const seconds = 1000;
@@ -93,7 +94,7 @@ let waitForServerStartup = () => {
 
 let uploadAndInstallAllAemPackages = () => {
   console.log('server started, installing local packages now...');
-  let packageArray = Object.keys(aemGlobals.zip_files);
+  let packageArray = Object.keys(content_files);
   return packageArray.reduce((promise, zipFile) => promise.then(() => new Promise((resolve) => {
     let waitForUploadSuccess = () => {
       let formData = {
@@ -150,24 +151,35 @@ let copyNodeFile = () => {
 let startAemServer = (jarName) =>{
   console.log('starting jar file AEM folder.');
   let startServer = 'cd ' + aem_folder_path + commandSeparator;
-  startServer += (windows) ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName + ' &';
+  startServer += (windows) ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' + ', \'-nointeractive\'' : 'java -jar ' + jarName + ' -nointeractive &';
   setup.executeSystemCommand(setup.getSystemCommand(startServer), formatOutput);
 };
 let downloadAllAemFiles = () => {
   let missingFiles = {};
   let previousInstall = false;
-  Object.keys(aemGlobals.zip_files).forEach(file => {
+  Object.keys(content_files).forEach(file => {
     if (!fs.existsSync(download_path + file)) {
-      missingFiles[file] = aemGlobals.zip_files[file];
+      missingFiles[file] = content_files[file];
     } else {
       previousInstall = true;
     }
   });
   let useExistingFiles = 'Existing AEM content files were found, would you like to use these files(y/n)? ';
-  return Promise.resolve((previousInstall) ? setup.confirmOptionalInstallation(useExistingFiles, () => missingFiles) : missingFiles)
+  let defaultOption = new Promise((resolve) => {
+    setTimeout(resolve, 10 * seconds, missingFiles);
+  });
+
+  let optionsArray = [defaultOption, setup.confirmOptionalInstallation(useExistingFiles, () => {
+    return missingFiles;
+  }, () => {
+    return content_files;
+  })];
+
+  return Promise.resolve((previousInstall) ? Promise.race(optionsArray) : content_files)
     .then(files => {
-      let downloads = files || missingFiles;
-      return setup.runListOfPromises(downloads, (dependency, globalPackage) => {
+      let downloadMessage = (files === missingFiles) ? '\nusing existing content files' : '\ndownloading all content files';
+      console.log(downloadMessage);
+      return setup.runListOfPromises(files, (dependency, globalPackage) => {
         console.log('downloading aem dependency ' + dependency);
         return setup.downloadPackage(globalPackage[dependency], download_path + dependency);
       });
@@ -186,7 +198,7 @@ let stopAemProcess = () => {
       let endPortProcess = (windows) ? 'taskkill /F /PID ' : 'kill ';
       return setup.executeSystemCommand(endPortProcess + processId, formatOutput);
     }).catch(error => {
-      console.log('failed to shutdown server with error\n' + error);
+      console.log('failed to shutdown server on port ' + port + ' with error\n' + error);
     });
 };
 let aemInstallationProcedure = () => {
@@ -210,7 +222,7 @@ let aemInstallationProcedure = () => {
     .then(() => mavenCleanAndAutoInstall())
     .then(() => stopAemProcess())
     .then(() => {
-      console.log('successfully built project with mvn.');
+      console.log('\nsuccessfully installed aem packages.\n');
     })
     .catch(error => {
       console.log('\naem installation failed with the following message:\n' + error);
