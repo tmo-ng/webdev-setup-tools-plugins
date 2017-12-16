@@ -11,9 +11,12 @@ const formatOutput = setup.getOutputOptions();
 const aemGlobals = setup.getProjectGlobals('aem');
 const port = aemGlobals.port || '4502';
 const content_files = aemGlobals.zip_files || aemGlobals.content_files;
+const options = aemGlobals.quickstart_options || [];
 const findPortProcessWindows = 'netstat -a -n -o | findstr :' + port;
 const findPortProcessOsxLinux = 'lsof -i TCP:' + port + ' | grep LISTEN';
 const seconds = 1000;
+const minutes = 60 * seconds;
+const max_wait = 5 * minutes; // maximum time to wait for quickstart server startup
 const windows = (operatingSystem === 'win32');
 const folderSeparator = (windows) ? '\\' : '/';
 const commandSeparator = (windows) ? '; ' : ' && ';
@@ -72,23 +75,28 @@ let waitForServerStartup = () => {
   console.log('waiting for server to startup...');
   let portListenCommand = (windows) ? findPortProcessWindows : findPortProcessOsxLinux;
   return new Promise((resolve) => {
-    let waitForEstablishedConnection = () => {
+    (function waitForEstablishedConnection(wait_time) {
       return setup.executeSystemCommand(portListenCommand, {resolve: formatOutput.resolve})
         .then(osResponse => {
-          if (osResponse.includes('ESTABLISHED')) {
+          if (osResponse.includes('ESTABLISHED') || wait_time > max_wait) {
             console.log(osResponse);
             resolve(osResponse);
           } else {
             console.log('server is listening, waiting for connection to be established');
-            setTimeout(waitForEstablishedConnection, 3 * seconds);
+            let delay = 3 * seconds;
+            setTimeout(() => {
+              waitForEstablishedConnection(wait_time + delay);
+            }, delay);
           }
         })
         .catch(() => {
           console.log('did not find any process at port ' + port + ', checking again.');
-          setTimeout(waitForEstablishedConnection, 5 * seconds);
+          let delay = 5 * seconds;
+          setTimeout(() => {
+            waitForEstablishedConnection(wait_time + delay);
+          }, delay);
         });
-    };
-    waitForEstablishedConnection();
+    })(0);
   });
 };
 
@@ -151,7 +159,11 @@ let copyNodeFile = () => {
 let startAemServer = (jarName) =>{
   console.log('starting jar file AEM folder.');
   let startServer = 'cd ' + aem_folder_path + commandSeparator;
-  startServer += (windows) ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' + ', \'-nointeractive\'' : 'java -jar ' + jarName + ' -nointeractive &';
+  startServer += (windows) ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName;
+  options.forEach(option => {
+    startServer += (windows) ? ', \'' + option + '\'' : ' ' + option;
+  });
+  startServer += (windows) ? '' : ' &';
   setup.executeSystemCommand(setup.getSystemCommand(startServer), formatOutput);
 };
 let downloadAllAemFiles = () => {
