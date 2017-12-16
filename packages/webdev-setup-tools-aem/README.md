@@ -20,13 +20,15 @@ This field typically has the following syntax:
   ```sh
   "web-dev-setup-tools": {
       "aem": {
+        "quickstart_options": ["-nointeractive"],
+        "port": 4502,
         "author": { // aem author file
           "aem6-author-p4009.jar": "https://sample.com/aem6-author-p4009.jar"
         },
         "license": { // aem license file
           "license.properties": "https://sample.com/license.properties"
         },
-        "zip_files": { // content files to upload and install
+        "content_files": { // content files to upload and install
           "acs-aem-2.12.0-min.zip": "https://github.com/acs-aem-2.12.0-min.zip",
           "AEM-2-6.1.SP2.zip": "https://sample.com/AEM-2-6.1.SP2.zip",
           "cq-6.1.0-sp2-cf-1.0.zip": "https://sample.com/cq-6.1.0-sp2-cf-1.0.zip",
