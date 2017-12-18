@@ -26,7 +26,7 @@ let setEnvironmentVariables = unzippedFolderPath => {
         '; $new_path = \'' + unzippedFolderPath + '\' + \'\\bin\' + \';\' + $old_path; ' +
         setup.setWindowsEnvironmentVariable('path', '$new_path') : 'echo "export PATH=/usr/local/maven/bin:\\$PATH" >> ' + homeDirectory + '/' + outFile;
 
-    let createSymbolicLinkToMaven = 'sudo ln -sf ' + unzippedFolderPath + ' /usr/local/maven';
+    let createSymbolicLinkToMaven = 'sudo ln -sfn ' + unzippedFolderPath + ' /usr/local/maven';
     let setAllPathVariables = setM2Home + commandSeparator + setMavenHome + commandSeparator + setSystemPath;
     setAllPathVariables = (operatingSystem === 'win32') ? setup.getSystemCommand(setAllPathVariables) : setAllPathVariables + commandSeparator + createSymbolicLinkToMaven;
     return setup.executeSystemCommand(setAllPathVariables, formatOutput);
