@@ -141,19 +141,19 @@ let mavenCleanAndAutoInstall = () => {
 };
 let copyNodeFile = () => {
   let nodeFolderPath = mvn_config_path + 'node';
-  let copyNodeToFolder = () => {
-    let nodePath = process.execPath;
-    let copyNodeFile = (windows) ? 'copy ' : 'cp ';
-    copyNodeFile += '\"' + nodePath + '\" ' + nodeFolderPath + folderSeparator;
-    return setup.executeSystemCommand(copyNodeFile, formatOutput);
-  };
+  let nodePath = nodeFolderPath + folderSeparator + 'node.exe';
 
-  console.log('copying node file into ' + nodeFolderPath);
-  if (fs.existsSync(nodeFolderPath)) {
-    return copyNodeToFolder();
+  if (!fs.existsSync(nodePath)) {
+    if (!fs.existsSync(nodeFolderPath)) {
+      console.log('making directory ' + nodeFolderPath);
+      fs.mkdirSync(nodeFolderPath);
+    }
+    console.log('copying node file into ' + nodePath);
+    let copyNodeFile = (windows) ? 'copy ' : 'cp ';
+    copyNodeFile += '\"' + process.execPath + '\" ' + nodeFolderPath + folderSeparator;
+    return setup.executeSystemCommand(copyNodeFile, formatOutput);
   } else {
-    return setup.executeSystemCommand('mkdir ' + nodeFolderPath, formatOutput)
-      .then(() => copyNodeToFolder());
+    return Promise.resolve();
   }
 };
 let startAemServer = (jarName) =>{
