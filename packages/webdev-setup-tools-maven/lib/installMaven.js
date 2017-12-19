@@ -35,7 +35,7 @@ let setEnvironmentVariables = unzippedFolderPath => {
       let existingVar = existingVars[maven_variable];
       let requiredVar = maven_vars[maven_variable];
       if ((Array.isArray(existingVar) && !existingVar.includes(requiredVar)) || (!Array.isArray(existingVar) && existingVar !== requiredVar)) {
-        fs.appendFileSync(homeDirectory + '/' + outFile, maven_variable + '=' + requiredVar);
+        fs.appendFileSync(homeDirectory + '/' + outFile, maven_variable + '=' + requiredVar + '\n');
       }
     });
     let createSymbolicLinkToMaven = 'sudo ln -sfn ' + unzippedFolderPath + ' /usr/local/maven';
