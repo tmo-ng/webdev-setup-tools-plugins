@@ -278,23 +278,36 @@ let getVariablesWithPrompt = (arrayOfConfigVariables, validateInputFunc) => {
   })), Promise.resolve({}));
 };
 
-let getVariablesFromFile = (filePath) => {
+let getVariablesFromFile = (filePath, separator) => {
   let setupRcContent = fs.readFileSync(filePath, 'utf8');
   let userVariables = {};
   setupRcContent.split(/\r?\n/).forEach(line => {
-    let keyVal = line.split('=');
+    let keyVal = line.split(separator);
     if (keyVal.length === 2) {
-      userVariables[keyVal[0]] = keyVal[1];
+      let key = keyVal[0];
+      let value = keyVal[1];
+      if (userVariables.hasOwnProperty(key)) {
+        let previousValue = userVariables[key];
+        userVariables[key] = (Array.isArray(previousValue)) ? previousValue : [previousValue];
+        userVariables[key].push(value);
+      } else {
+        userVariables[key] = value;
+      }
     }
   });
   return userVariables;
 };
-let getMissingVariables = (setuprcPath, arrayOfConfigVariables) => {
+let getMissingVariables = (filePath, arrayOfConfigVariables, separator) => {
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
   let missingVariables = [];
-  let foundVariables = getVariablesFromFile(setuprcPath);
+  let keyValSeparator = separator || '=';
+  let foundVariables = getVariablesFromFile(filePath, keyValSeparator);
   for (let index = 0; index < arrayOfConfigVariables.length; index++) {
     let variable = arrayOfConfigVariables[index];
-    if (!foundVariables[variable]) {
+    let previousVar = foundVariables[variable];
+    if (!foundVariables.hasOwnProperty(variable)) {
       missingVariables.push(variable);
     }
   }
@@ -418,5 +431,6 @@ module.exports = {
   endProcessWithMessage: endProcessWithMessage,
   getConfigVariables: getConfigVariables,
   getVariablesWithPrompt: getVariablesWithPrompt,
-  getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt
+  getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt,
+  getMissingVariables: getMissingVariables
 };
