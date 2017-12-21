@@ -1,7 +1,7 @@
 {
   "main": "lib/webdev-setup-tools.js",
   "name": "webdev-setup-tools",
-  "version": "4.0.6",
+  "version": "4.0.9",
   "description": "Setup and install packages required for many web development tasks",
   "repository": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools",
   "keywords": [
