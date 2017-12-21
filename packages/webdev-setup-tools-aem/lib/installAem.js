@@ -16,7 +16,7 @@ const findPortProcessWindows = 'netstat -a -n -o | findstr :' + port;
 const findPortProcessOsxLinux = 'lsof -i TCP:' + port + ' | grep LISTEN';
 const seconds = 1000;
 const minutes = 60 * seconds;
-const max_wait = 5 * minutes; // maximum time to wait for quickstart server startup
+const max_wait = 4 * minutes; // maximum time to wait for quickstart server startup
 const windows = (operatingSystem === 'win32');
 const folderSeparator = (windows) ? '\\' : '/';
 const commandSeparator = (windows) ? '; ' : ' && ';
@@ -35,7 +35,13 @@ let mvn_config_path = '';
 
 // customPrompts - and array of objects with of the form {display: 'please enter the path to your aem installation: ', var_name: 'aem_install_dir'},
 let installAemDependencies = (customPrompts) => {
-  return setup.getConfigVariablesCustomPrompt(customPrompts, filepath => fs.existsSync(filepath))
+  return setup.getConfigVariablesCustomPrompt(customPrompts, folderPath => {
+    let validFolder = fs.existsSync(folderPath);
+    if (!validFolder) {
+      console.log('the folder ' + folderPath + ' could not be found.');
+    }
+    return validFolder;
+  })
     .then(userVars => {
       mvn_config_dir = userVars.mvn_config_dir;
       download_path_dir = userVars.download_path_dir;

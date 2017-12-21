@@ -306,7 +306,6 @@ let getMissingVariables = (filePath, arrayOfConfigVariables, separator) => {
   let foundVariables = getVariablesFromFile(filePath, keyValSeparator);
   for (let index = 0; index < arrayOfConfigVariables.length; index++) {
     let variable = arrayOfConfigVariables[index];
-    let previousVar = foundVariables[variable];
     if (!foundVariables.hasOwnProperty(variable)) {
       missingVariables.push(variable);
     }
@@ -340,12 +339,12 @@ let getConfigVariablesCustomPrompt = (promptObjects , validateInputFunc) => {
   let userVariables = {};
   let missingConfigVars = (existingSetupRc) ? [] : promptObjects;
   if (existingSetupRc) {
-    promptObjects.forEach(function (prompt) {
+    promptObjects.forEach(prompt => {
       userConfigVariables.push(prompt['var_name']);
     });
     let configVariables = getMissingVariables(setuprcPath, userConfigVariables);
     userVariables = configVariables.foundVariables;
-    promptObjects.forEach(function (prompt) {
+    promptObjects.forEach(prompt => {
       if (!userVariables.hasOwnProperty(prompt['var_name'])) {
         missingConfigVars.push(prompt)
       }
