@@ -21,6 +21,10 @@ This field typically has the following syntax:
   "web-dev-setup-tools": {
       "aem": {
         "quickstart_options": ["-nointeractive"],
+        "mvn_install_options": [
+          "-PautoInstallPackage",
+          "-DskipTests"
+        ],
         "port": 4502,
         "author": { // aem author file
           "aem6-author-p4009.jar": "https://sample.com/aem6-author-p4009.jar"
