@@ -1,4 +1,4 @@
-// this file intended to parse the package.json file to find any dependencies that need to be updated
+// this file intended to parse the package.json file for missing dependencies
 const semver = require('semver');
 const os = require('os');
 const globals = require('../../../package.json');
