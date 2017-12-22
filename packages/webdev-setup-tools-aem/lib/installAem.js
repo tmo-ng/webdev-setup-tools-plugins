@@ -12,6 +12,7 @@ const aemGlobals = setup.getProjectGlobals('aem');
 const port = aemGlobals.port || '4502';
 const content_files = aemGlobals.zip_files || aemGlobals.content_files;
 const options = aemGlobals.quickstart_options || [];
+const mvn_install_options = aemGlobals.mvn_install_options || [];
 const findPortProcessWindows = 'netstat -a -n -o | findstr :' + port;
 const findPortProcessOsxLinux = 'lsof -i TCP:' + port + ' | grep LISTEN';
 const seconds = 1000;
@@ -137,13 +138,15 @@ let mavenCleanAndAutoInstall = () => {
   let outFile = aem_folder_path + 'mvnOutput.log';
 
   //need to check whether JAVA_HOME has been set here for windows machines, if not, this can be executed with the command below
-  let loadJavaHome = '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME');
-
-  let runMavenCleanInstall = (windows) ? loadJavaHome + commandSeparator : '';
-  runMavenCleanInstall += 'cd ' + mvn_config_path + commandSeparator + 'mvn clean install \-PautoInstallPackage > ' + outFile;
-
+  let loadJavaHome = (windows) ? '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME') + commandSeparator : '';
+  let mvnCleanInstallCmd = 'cd ' + mvn_config_path + commandSeparator + 'mvn clean install';
+  let mvnOptions = '';
+  mvn_install_options.forEach(option => {
+    mvnOptions += ' ' + option;
+  });
+  let fullMvnInstallCmd = loadJavaHome + mvnCleanInstallCmd + mvnOptions + ' > ' + outFile;
   console.log('running mvn clean and auto package install.\nOutput is being sent to the file ' + outFile);
-  return setup.executeSystemCommand(setup.getSystemCommand(runMavenCleanInstall), {resolve: formatOutput.resolve});
+  return setup.executeSystemCommand(setup.getSystemCommand(fullMvnInstallCmd), {resolve: formatOutput.resolve});
 };
 let copyNodeFile = () => {
   let nodeFolderPath = mvn_config_path + 'node';
