@@ -11,7 +11,7 @@ get_local_node_version () {
     echo "$currentVersion"
 }
 get_latest_node_version () {
-    latestVersion=$(nvm ls-remote | grep -o -E '[0-9]+(\.[0-9]+){1,}' | tail -1)
+    latestVersion=$(node -e "require('webdev-setup-tools').getMaxNodeVersion().then((version) => {console.log(version.trim())})")
     echo "$latestVersion"
 }
 #install and use node version
@@ -29,7 +29,7 @@ install_node_version () {
 perform_optional_update () {
     localVersion=$1
     latestVersion=$2
-    if [[ $localVersion != $latestVersion ]]; then
+    if [[ $localVersion != ${latestVersion:1} ]]; then
         echo -n "would you like to update node now(y/n)? "
         read response
         if [[ $response != "n" ]]; then
@@ -44,9 +44,9 @@ perform_optional_update () {
         echo "local node version $localVersion is up to date"
     fi
 }
-local_is_not_compatible () {
+local_is_compatible () {
     localVersion=$1
-    isCompatible=$(node -e "console.log(require('semver').outside('$localVersion', require('./package.json')['web-dev-setup-tools']['node']['install'], '<'))")
+    isCompatible=$(node -e "console.log(require('semver').satisfies('$localVersion', require('./package.json')['web-dev-setup-tools']['node']['install']))")
     echo "$isCompatible"
 }
 #install dependencies required by setup.js
@@ -59,7 +59,7 @@ run_full_nvm_install () {
     if curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
     then
         load_nvm_script
-        install_node_version
+        nvm install --lts
         install_package_dependencies
     else
         echo "could not download nvm"
@@ -83,7 +83,7 @@ main () {
         install_package_dependencies
         #check here for compatibility
         echo "you are currently using node version $LOCAL_VERSION"
-        if [[ $(local_is_not_compatible $LOCAL_VERSION) == "true" ]]; then
+        if [[ $(local_is_compatible $LOCAL_VERSION) == "false" ]]; then
             echo "local version of node is out of date, updating now."
             install_node_version
             nvm reinstall-packages $LOCAL_VERSION

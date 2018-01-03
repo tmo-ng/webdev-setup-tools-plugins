@@ -57,18 +57,19 @@ call :ValidateNode
 exit /b 0
 
 :CheckNodeCompatibility
-for /f "tokens=*" %%i in ('node -e "require('webdev-setup-tools').getMaxNodeVersion().then((version) => {console.log(version)})"') do (
+for /f "tokens=*" %%i in ('node -e "require('webdev-setup-tools').getMaxNodeVersion().then((version) => {console.log(version.trim())})"') do (
     set latestNodeVersion=%%i
 )
-set notCompatible=""
+echo the newest version of node is !latestNodeVersion!
+set compatible=""
 set nodePath=""
-for /f "tokens=*" %%i in ('node -e "console.log(require('semver').outside('!userNodeVersion:~1!', require('./package.json')['web-dev-setup-tools']['node']['install'], '<'))"') do (
-    set notCompatible=%%i
+for /f "tokens=*" %%i in ('node -e "console.log(require('semver').satisfies('!userNodeVersion:~1!', require('./package.json')['web-dev-setup-tools']['node']['install']))"') do (
+    set compatible=%%i
 )
 for /f "tokens=*" %%i in ('where node.exe') do (
     set nodePath=%%i
 )
-if !notCompatible! == true (
+if !compatible! == false (
     echo local node version !userNodeVersion! is out of date, updating now
 
     powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/!latestNodeVersion!/win-x64/node.exe', '!nodePath!')"
