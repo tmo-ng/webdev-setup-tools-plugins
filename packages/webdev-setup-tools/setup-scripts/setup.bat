@@ -6,29 +6,48 @@ set downloadsFolder=%userprofile%\Downloads\
 set npmCmd=npm
 set hasMinPsVersion=""
 set hasScriptExecEnabled=""
+set hasAdminRights=""
+
+
 for /f "tokens=*" %%i in ('powershell -command "$policy = Get-ExecutionPolicy; $policy -ne \"restricted\";"') do (
     set hasScriptExecEnabled=%%i
 )
+
 if !hasScriptExecEnabled! == False (
     set /p missingPrompt=This program requires powershell script execution to be enabled.
     set /p missingPrompt=log into powershell and enter the command "Set-ExecutionPolicy unrestricted", then restart this script.
     exit /b 0
 )
+
+set /p killNodeMessage=This will kill all running node processes. Press enter to continue.
+powershell -command "& { . .\nodeInstallerScript.ps1; KillBackgroundNodeProcesses }"
+
 for /f "tokens=*" %%i in ('powershell -command "& { . .\nodeInstallerScript.ps1; IsPowershellVersionCompatible }"') do (
     set hasMinPsVersion=%%i
 )
+
 if !hasMinPsVersion! == False (
     set /p missingPrompt=This program requires powershell version 3.0 or higher.
     set /p missingPrompt=This can be downloaded at https://www.microsoft.com/en-us/download/details.aspx?id=34595
     exit /b 0
 )
+
+for /f "tokens=*" %%i in ('powershell -command "& { . .\nodeInstallerScript.ps1; IsCommandPromptAdmin }"') do (
+    set hasAdminRights=%%i
+)
+
+if !hasAdminRights! == False (
+    set /p missingPrompt=Please restart this script in an administrative command prompt window. Press Enter to exit.
+    exit /b 0
+)
+
 for /f "tokens=*" %%i in ('node -v 2^>nul') do (
     set userNodeVersion=%%i
 )
+
 for /f "tokens=*" %%i in ('powershell -command "& { . .\nodeInstallerScript.ps1; FindMostRecentNodeVersion }"') do (
     set latestNodeVersion=%%i
 )
-set /p missingPrompt=This script requires administrative privileges. Press Enter to continue.
 
 if !userNodeVersion! == "" (
     call :InstallNode
@@ -38,6 +57,9 @@ call :ValidateNode
 exit /b 0
 
 :CheckNodeCompatibility
+for /f "tokens=*" %%i in ('node -e "require('webdev-setup-tools').getMaxNodeVersion('7.0.0 - 8.9').then((version) => {console.log(version)})"') do (
+    set latestNodeVersion=%%i
+)
 set notCompatible=""
 set nodePath=""
 for /f "tokens=*" %%i in ('node -e "console.log(require('semver').outside('!userNodeVersion:~1!', require('./package.json')['web-dev-setup-tools']['node']['install'], '<'))"') do (
@@ -46,17 +68,17 @@ for /f "tokens=*" %%i in ('node -e "console.log(require('semver').outside('!user
 for /f "tokens=*" %%i in ('where node.exe') do (
     set nodePath=%%i
 )
-echo !nodePath!
 if !notCompatible! == true (
     echo local node version !userNodeVersion! is out of date, updating now
-    powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/latest/win-x64/node.exe', '!nodePath!')"
+
+    powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/!latestNodeVersion!/win-x64/node.exe', '!nodePath!')"
     set userNodeVersion=!latestNodeVersion!
 )
 if NOT !userNodeVersion! == !latestNodeVersion! (
     set /p optionalPrompt=a newer version of node is available. would you like to install this version now ^(yes/no^)^?
     if NOT !optionalPrompt! == no (
-        powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/latest/win-x64/node.exe', '!nodePath!')"
-        set userNodeVersion=!latestNodeVersion!
+    powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/!latestNodeVersion!/win-x64/node.exe', '!nodePath!')"
+    set userNodeVersion=!latestNodeVersion!
     )
 )
 echo user node version !userNodeVersion! is up to date
@@ -65,7 +87,7 @@ exit /b 0
 
 :InstallNode
 set /p missingPrompt=node is missing, press any key to start installation
-powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/latest/node-!latestNodeVersion!-x64.msi', '!downloadsFolder!node-!latestNodeVersion!-x64.msi')"
+powershell.exe -command "$client = New-Object System.Net.WebClient;$client.Headers['User-Agent'] = 'tmoNg';$client.DownloadFile('https://nodejs.org/dist/!latestNodeVersion!/node-!latestNodeVersion!-x64.msi', '!downloadsFolder!node-!latestNodeVersion!-x64.msi')"
 msiexec /qn /l* C:\node-log.txt /i !downloadsFolder!node-!latestNodeVersion!-x64.msi
 set userNodeVersion=!latestNodeVersion!
 echo node was installed with version !latestNodeVersion!

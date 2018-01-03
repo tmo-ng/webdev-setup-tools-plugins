@@ -25,7 +25,8 @@
     }
   ],
   "devDependencies": {
-    "lerna": "^2.5.1"
+    "lerna": "^2.5.1",
+    "request": "^2.83.0"
   },
   "workspaces": [
     "packages/*"

@@ -30,7 +30,7 @@ let setEnvironmentVariables = unzippedFolderPath => {
     let maven_vars = {'export M2_HOME': '/usr/local/maven', 'export MAVEN_HOME': '/usr/local/maven', 'export PATH': '/usr/local/maven/bin:$PATH'};
     let mvnConfigVars = Object.keys(maven_vars);
     let profileVariables = setup.getMissingVariables(homeDirectory + '/' + outFile, mvnConfigVars);
-    let existingVars = profileVariables.foundVariables;
+    let existingVars = profileVariables.foundVariables || {};
     mvnConfigVars.forEach(maven_variable => {
       let existingVar = existingVars[maven_variable];
       let requiredVar = maven_vars[maven_variable];

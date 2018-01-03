@@ -1,8 +1,8 @@
 // this file intended to parse the package.json file for missing dependencies
 const semver = require('semver');
 const os = require('os');
-const globals = require('../../../package.json');
-const webdevSetupTools = globals['web-dev-setup-tools'];
+const globals = require('../../../package.json') || {};
+const webdevSetupTools = globals['web-dev-setup-tools'] || {};
 const {exec} = require('child_process');
 const request = require('request');
 const fs = require('fs');
@@ -167,6 +167,9 @@ let listOptionals = optionalPackages => {
 };
 
 let getVersionWithRequest = (productUrl, hyperlinkPattern, range) => {
+  if (!semver.validRange(range)) {
+    return Promise.reject(new Error('invalid range specified'));
+  }
   return new Promise((resolve, reject) => {
     request({
       followAllRedirects: true,
@@ -187,12 +190,23 @@ let getVersionWithRequest = (productUrl, hyperlinkPattern, range) => {
       }
       let arrayOfVersions = Object.keys(versionMap);
       let highestVersion = semver.maxSatisfying(arrayOfVersions, range);
+
+      if (!highestVersion) {
+        reject(new Error('No compatible version found for the specified range'));
+      }
+
       let highestVersionObj = {};
       highestVersionObj.downloadHyperlink = versionMap[highestVersion];
       highestVersionObj.version = highestVersion;
       resolve(highestVersionObj);
     });
   });
+};
+
+let getMaxNodeVersion = (range) => {
+  let globalNode = globals.engines || webdevSetupTools.node;
+  let installRange = range || globalNode.node || globalNode.install;
+  return getVersionWithRequest('https://nodejs.org/dist/', /href="v([0-9.]+)\/"/g, installRange).then(versionObj => 'v' + versionObj.version);
 };
 
 let downloadPackage = (hyperlink, downloadPath) => {
@@ -277,26 +291,29 @@ let getVariablesWithPrompt = (arrayOfConfigVariables, validateInputFunc) => {
     promptForValue();
   })), Promise.resolve({}));
 };
+let getVariablesFromText = (data, separator) => {
+  let userConstants = {};
+  let matcher = new RegExp(separator);
+  data.split(/\r?\n/).forEach(line => {
+    let indexToSplit = matcher.exec(line);
+    if (!indexToSplit) {
+      return;
+    }
+    let key = line.substring(0, indexToSplit.index).trim();
+    let value = line.substring(indexToSplit.index + indexToSplit[0].length).trim();
+    userConstants[key] = value;
+  });
+  return userConstants;
+};
 
 let getVariablesFromFile = (filePath, separator) => {
-  let setupRcContent = fs.readFileSync(filePath, 'utf8');
-  let userVariables = {};
-  setupRcContent.split(/\r?\n/).forEach(line => {
-    let keyVal = line.split(separator);
-    if (keyVal.length === 2) {
-      let key = keyVal[0];
-      let value = keyVal[1];
-      if (userVariables.hasOwnProperty(key)) {
-        let previousValue = userVariables[key];
-        userVariables[key] = (Array.isArray(previousValue)) ? previousValue : [previousValue];
-        userVariables[key].push(value);
-      } else {
-        userVariables[key] = value;
-      }
-    }
-  });
-  return userVariables;
+  if (!fs.existsSync(filePath)) {
+    return {};
+  }
+  const data = fs.readFileSync(filePath, 'utf8');
+  return getVariablesFromText(data, separator);
 };
+
 let getMissingVariables = (filePath, arrayOfConfigVariables, separator) => {
   if (!fs.existsSync(filePath)) {
     return {};
@@ -431,5 +448,6 @@ module.exports = {
   getConfigVariables: getConfigVariables,
   getVariablesWithPrompt: getVariablesWithPrompt,
   getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt,
-  getMissingVariables: getMissingVariables
+  getMissingVariables: getMissingVariables,
+  getMaxNodeVersion: getMaxNodeVersion
 };

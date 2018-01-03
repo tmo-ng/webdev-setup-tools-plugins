@@ -1,6 +1,6 @@
 function FindMostRecentNodeVersion
 {
-  $URI = "https://nodejs.org/dist/latest/"
+  $URI = "https://nodejs.org/"
   $HTML = Invoke-WebRequest -Uri $URI
   $nodeVersions = ($HTML.ParsedHtml.getElementsByTagName('a') | Select-Object -Expand href )
   Foreach ($version in $nodeVersions)
@@ -21,6 +21,17 @@ function UpdateToMostRecentVersion
 {
 
 }
+function KillBackgroundNodeProcesses
+{
+    try
+    {
+        Get-Process node -ErrorAction SilentlyContinue | foreach {Stop-Process $_.Id}
+    }
+    catch
+    {
+        Write-Host "no background node processes found"
+    }
+}
 function IsPowershellVersionCompatible
 {
     $output = Get-Host | Select-Object Version
@@ -30,8 +41,10 @@ function IsPowershellVersionCompatible
     }
     return 'False'
 }
-function IsScriptExecutionEnabled
+function IsCommandPromptAdmin
 {
-    $policy = Get-ExecutionPolicy
-    return $policy -ne "restricted"
+    $wid=[System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $prp=new-object System.Security.Principal.WindowsPrincipal($wid)
+    $adm=[System.Security.Principal.WindowsBuiltInRole]::Administrator
+    return $prp.IsInRole($adm)
 }
