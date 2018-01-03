@@ -57,7 +57,7 @@ call :ValidateNode
 exit /b 0
 
 :CheckNodeCompatibility
-for /f "tokens=*" %%i in ('node -e "require('webdev-setup-tools').getMaxNodeVersion('7.0.0 - 8.9').then((version) => {console.log(version)})"') do (
+for /f "tokens=*" %%i in ('node -e "require('webdev-setup-tools').getMaxNodeVersion().then((version) => {console.log(version)})"') do (
     set latestNodeVersion=%%i
 )
 set notCompatible=""

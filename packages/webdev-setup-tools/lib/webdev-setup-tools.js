@@ -204,7 +204,7 @@ let getVersionWithRequest = (productUrl, hyperlinkPattern, range) => {
 };
 
 let getMaxNodeVersion = (range) => {
-  let globalNode = globals.engines || webdevSetupTools.node;
+  let globalNode = webdevSetupTools.node || globals.engines;
   let installRange = range || globalNode.node || globalNode.install;
   return getVersionWithRequest('https://nodejs.org/dist/', /href="v([0-9.]+)\/"/g, installRange).then(versionObj => 'v' + versionObj.version);
 };
