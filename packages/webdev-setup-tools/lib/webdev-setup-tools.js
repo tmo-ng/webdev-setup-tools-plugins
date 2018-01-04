@@ -25,6 +25,7 @@ let getProjectGlobals = (packageName) => {
   return webdevSetupTools[packageName];
 };
 
+
 // userGlobals - object mapping packages to versions
 // projectGlobals - global object listed in package.json at root
 // packageArray - array of module objects with name and highestCompatibleVersion properties
