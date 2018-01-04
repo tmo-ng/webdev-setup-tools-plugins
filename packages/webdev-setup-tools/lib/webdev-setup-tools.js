@@ -7,6 +7,7 @@ const {exec} = require('child_process');
 const request = require('request');
 const fs = require('fs');
 const readline = require('readline');
+
 const operatingSystem = os.platform().trim(); // supported values are darwin (osx), linux (ubuntu), and win32 ()
 const scriptsDirectory = __dirname;
 const formattedOutputOptions = {
