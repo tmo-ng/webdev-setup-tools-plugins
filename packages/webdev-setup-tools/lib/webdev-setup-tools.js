@@ -304,7 +304,13 @@ let getVariablesFromText = (data, separator) => {
     }
     let key = line.substring(0, indexToSplit.index).trim();
     let value = line.substring(indexToSplit.index + indexToSplit[0].length).trim();
-    userConstants[key] = value;
+    if (userConstants.hasOwnProperty(key)) {
+      let previousValue = userConstants[key];
+      userConstants[key] = (Array.isArray(previousValue)) ? previousValue : [previousValue];
+      userConstants[key].push(value);
+    } else {
+      userConstants[key] = value;
+    }
   });
   return userConstants;
 };
