@@ -1,29 +1,33 @@
 #!/usr/bin/env bash
 #load nvm into current environment
 #node -e "console.log(require('semver').outside($localVersion, require('../package.json').globals.engines.node, '<'))"
-load_nvm_script () {
+function load_nvm_script () {
   #this assumes the recommended installation directory of ~/.nvm
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    if [ -e "$HOME/.nvm" ]; then
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    fi
+
 }
-get_local_node_version () {
-    currentVersion=$(nvm current | grep -o -E '[0-9]+(\.[0-9]+){1,}' 2> null)
+function get_local_node_version () {
+    currentVersion=$(nvm current 2> /dev/null | grep -o -E '[0-9]+(\.[0-9]+){1,}')
     echo "$currentVersion"
 }
-get_local_nvm_version () {
-    currentVersion=$(nvm --version | grep -o -E '[0-9]+(\.[0-9]+){1,}' 2> null)
+function get_local_nvm_version () {
+    currentVersion=$(nvm --version 2> /dev/null | grep -o -E '[0-9]+(\.[0-9]+){1,}')
     echo "$currentVersion"
 }
-get_max_compatible_node () {
+
+function get_max_compatible_node () {
     latestVersion=$(node -e "require('webdev-setup-tools').getMaxNodeVersion().then((version) => {console.log(version.trim())})")
     echo "$latestVersion"
 }
-get_highest_local_node () {
-   latestVersionLocal=$(nvm list | head -n 1 | grep -o -E '[0-9]+(\.[0-9]+){1,}' 2> null)
+function get_highest_local_node () {
+   latestVersionLocal=$(nvm list | head -n 1 | grep -o -E '[0-9]+(\.[0-9]+){1,}')
    echo "$latestVersionLocal"
 }
 #install and use node version
-install_node_version () {
+function install_node_version () {
     #install latest version, and migrate npm to new version
     latestVersion=$(get_max_compatible_node)
     if nvm install $latestVersion
@@ -37,7 +41,7 @@ install_node_version () {
         exit
     fi
 }
-perform_optional_update () {
+function perform_optional_update () {
     localVersion=$1
     latestVersion=$2
     if [[ $localVersion != ${latestVersion:1} ]]; then
@@ -56,18 +60,18 @@ perform_optional_update () {
         echo "local node version $localVersion is up to date"
     fi
 }
-local_is_compatible () {
+function local_is_compatible () {
     localVersion=$1
     isCompatible=$(node -e "console.log(require('semver').satisfies('$localVersion', require('./package.json')['web-dev-setup-tools']['node']['install']))")
     echo "$isCompatible"
 }
 #install dependencies required by setup.js
-install_package_dependencies () {
+function install_package_dependencies () {
     if cd ../; then
         npm install
     fi
 }
-install_node_lts () {
+function install_node_lts () {
     nvm install --lts
     latestVersion=$(get_highest_local_node)
     nvm alias default $latestVersion
@@ -83,7 +87,7 @@ install_node_lts () {
     fi
 
 }
-install_nvm () {
+function install_nvm () {
     LOCAL_VERSION=$(get_local_nvm_version)
     if [ -z "$LOCAL_VERSION" ]; then
         echo "no version of nvm detected detected, installing now"
@@ -97,7 +101,7 @@ install_nvm () {
     fi
 }
 
-main () {
+function main () {
     if [[ ! -e ~/.bash_profile ]]; then
         > ~/.bash_profile
     fi
@@ -131,6 +135,6 @@ main () {
     load_nvm_script
 
     echo "beginning full install"
-    bash -l -c "cd ./setup-scripts && node --inspect-brk ./setup.js"
+    bash -l -c "cd ./setup-scripts && node ./setup.js"
 }
 main
