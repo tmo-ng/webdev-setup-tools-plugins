@@ -10,20 +10,31 @@ get_local_node_version () {
     currentVersion=$(nvm current | grep -o -E '[0-9]+(\.[0-9]+){1,}' 2> null)
     echo "$currentVersion"
 }
-get_latest_node_version () {
+get_local_nvm_version () {
+    currentVersion=$(nvm --version | grep -o -E '[0-9]+(\.[0-9]+){1,}' 2> null)
+    echo "$currentVersion"
+}
+get_max_compatible_node () {
     latestVersion=$(node -e "require('webdev-setup-tools').getMaxNodeVersion().then((version) => {console.log(version.trim())})")
     echo "$latestVersion"
+}
+get_highest_local_node () {
+   latestVersionLocal=$(nvm list | head -n 1 | grep -o -E '[0-9]+(\.[0-9]+){1,}' 2> null)
+   echo "$latestVersionLocal"
 }
 #install and use node version
 install_node_version () {
     #install latest version, and migrate npm to new version
-    latestVersion=$(get_latest_node_version)
+    latestVersion=$(get_max_compatible_node)
     if nvm install $latestVersion
     then
         nvm alias default $latestVersion
         nvm use $latestVersion
+
+
     else
         echo "install failed for node"
+        exit
     fi
 }
 perform_optional_update () {
@@ -37,6 +48,7 @@ perform_optional_update () {
             nvm install $latestVersion
             nvm alias default $latestVersion
             nvm use $latestVersion
+
         else
             echo "ignoring node update"
         fi
@@ -55,14 +67,33 @@ install_package_dependencies () {
         npm install
     fi
 }
-run_full_nvm_install () {
-    if curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
-    then
-        load_nvm_script
-        nvm install --lts
-        install_package_dependencies
-    else
-        echo "could not download nvm"
+install_node_lts () {
+    nvm install --lts
+    latestVersion=$(get_highest_local_node)
+    nvm alias default $latestVersion
+    nvm use $latestVersion
+    load_nvm_script
+
+    #need to install to verify lts satisfies required version
+    install_package_dependencies
+
+    if [[ $(local_is_compatible $latestVersion) == "false" ]]; then
+        echo "local version of node is not compatible with this project"
+        install_node_version
+    fi
+
+}
+install_nvm () {
+    LOCAL_VERSION=$(get_local_nvm_version)
+    if [ -z "$LOCAL_VERSION" ]; then
+        echo "no version of nvm detected detected, installing now"
+        if curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | bash
+        then
+            echo "successfully installed nvm"
+        else
+            echo "failed to install nvm"
+            exit
+        fi
     fi
 }
 
@@ -76,8 +107,10 @@ main () {
     load_nvm_script
     LOCAL_VERSION=$(get_local_node_version)
     if [ -z "$LOCAL_VERSION" ]; then
-        echo "no version of nvm detected detected, installing now"
-        run_full_nvm_install
+        echo "no version of node detected, installing now"
+        install_nvm
+        load_nvm_script
+        install_node_lts
     else
         echo "now installing required package dependencies"
         install_package_dependencies
@@ -88,12 +121,16 @@ main () {
             install_node_version
             nvm reinstall-packages $LOCAL_VERSION
         else
-            REMOTE_VERSION=$(get_latest_node_version)
+            REMOTE_VERSION=$(get_max_compatible_node)
             echo "the latest version available is $REMOTE_VERSION"
             perform_optional_update $LOCAL_VERSION $REMOTE_VERSION
         fi
     fi
+    #update to newest version in current shell
+
+    load_nvm_script
+
     echo "beginning full install"
-    bash -l -c "cd ./setup-scripts && node ./setup.js"
+    bash -l -c "cd ./setup-scripts && node --inspect-brk ./setup.js"
 }
 main
