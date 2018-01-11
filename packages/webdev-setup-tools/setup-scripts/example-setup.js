@@ -10,13 +10,13 @@ const gems = require('webdev-setup-tools-gems');
 const java = require('webdev-setup-tools-java');
 const seconds = 1000;
 let fullInstall = () => {
-    ruby.installRuby()
-        .then(() => gems.installGems())
-        .then(() => npm.installNpmGlobalPackages())
-        .then(() => java.installJava())
-        .then(() => maven.installMaven())
-        .then(() => aem.installAem())
-        .then(() => setup.endProcessWithMessage('You are now ready to begin development.'
-            , 5 * seconds, 0));
+  ruby.installRuby()
+    .then(() => gems.installGems())
+    .then(() => npm.installNpmGlobalPackages())
+    .then(() => java.installJava())
+    .then(() => maven.installMaven())
+    .then(() => aem.installAem())
+    .then(() => setup.endProcessWithMessage('You are now ready to begin development.'
+      , 5 * seconds, 0));
 };
 fullInstall();

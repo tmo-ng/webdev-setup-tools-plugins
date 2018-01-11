@@ -84,9 +84,12 @@ let handleUnresponsiveSystem = (delayTime, delayMessage) => {
   });
 };
 
-let executeSystemCommand = (commandToExecute, outputOptions) => {
+let executeSystemCommand = (commandToExecute, outputOptions, environment) => {
   return new Promise((resolve, reject) => {
-    let systemCommand = exec(commandToExecute, {maxBuffer: 1024 * 500}, (error, osResponse, stderr) => {
+    let systemCommand = exec(commandToExecute, {
+      maxBuffer: 1024 * 500,
+      env: environment
+    }, (error, osResponse, stderr) => {
       if (error) {
         reject(Error(error));
       } else if (stderr && !outputOptions.stderr) {
@@ -342,7 +345,7 @@ let shouldModifyGitIgnore = (isAGitRepo, gitIgnorePath, fileName) => {
   return isAGitRepo && (!fs.existsSync(gitIgnorePath) || !fs.readFileSync(gitIgnorePath, 'utf8').includes(fileName));
 };
 
-let getConfigVariablesCustomPrompt = (promptObjects , validateInputFunc) => {
+let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
 
   let validationFunction = (validateInputFunc) ? validateInputFunc : input => input;
   let isAGitRepo = fs.existsSync('../.git');
