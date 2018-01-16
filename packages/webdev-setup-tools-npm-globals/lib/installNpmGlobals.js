@@ -9,8 +9,6 @@ const formatOutput = setup.getOutputOptions();
 const npmProjectGlobals = setup.getProjectGlobals('node').globals;
 const windowsProjectGlobals = npmProjectGlobals.windows;
 delete npmProjectGlobals.windows;
-const minutes = 60 * 1000;
-
 
 let installGlobalNpmDependencies = () => {
 
@@ -25,7 +23,7 @@ let installGlobalNpmDependencies = () => {
   };
   let npmListUserGlobals = setup.getSystemCommand('npm ls -g');
   let npmInstallModuleAsGlobal = 'npm install -g';
-  console.log('getting installed node modules.');
+  console.log('gettling installed node modules.');
   return setup.findUserGlobals(npmListUserGlobals, getGlobals)
     .catch(error => { // this will catch if the user has unmet dependencies on existing npm packages
       console.log(error);

@@ -12,7 +12,6 @@ const globalMavenObject = {maven: requiredMavenVersion};
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const homeDirectory = os.homedir();
 
-
 let setEnvironmentVariables = unzippedFolderPath => {
   console.log('setting your maven system environment variables.');
   if (windows) {

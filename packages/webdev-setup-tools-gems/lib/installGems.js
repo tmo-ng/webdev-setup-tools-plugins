@@ -7,7 +7,6 @@ const os = require('os');
 const operatingSystem = os.platform().trim();
 const windows = (operatingSystem === 'win32');
 
-
 const gemGlobals = setup.getProjectGlobals('ruby') || {};
 const globalGems = gemGlobals.gems || {};
 const formatOutput = setup.getOutputOptions();
