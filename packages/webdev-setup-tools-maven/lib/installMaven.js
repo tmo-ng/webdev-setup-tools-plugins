@@ -12,6 +12,7 @@ const globalMavenObject = {maven: requiredMavenVersion};
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const homeDirectory = os.homedir();
 
+
 let setEnvironmentVariables = unzippedFolderPath => {
   console.log('setting your maven system environment variables.');
   if (windows) {
@@ -46,9 +47,8 @@ let setEnvironmentVariables = unzippedFolderPath => {
     let createSymbolicLinkToMaven = 'sudo ln -sfn ' + unzippedFolderPath + ' /usr/local/maven';
     return setup.executeSystemCommand(createSymbolicLinkToMaven, formatOutput);
   }
-
-
 };
+
 let installMavenOnHost = (mavenDownload) => {
   let remotePath = mavenDownload.downloadHyperlink;
   let fileName = remotePath.substring(remotePath.lastIndexOf('/') + 1, remotePath.length);

@@ -11,6 +11,7 @@ const windowsProjectGlobals = npmProjectGlobals.windows;
 delete npmProjectGlobals.windows;
 const minutes = 60 * 1000;
 
+
 let installGlobalNpmDependencies = () => {
 
   let userState = {};

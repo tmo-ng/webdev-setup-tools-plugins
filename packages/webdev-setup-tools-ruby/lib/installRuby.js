@@ -178,6 +178,7 @@ let installRvmOnMacOrLinux = () => {
     });
 };
 
+
 module.exports = {
   installRuby: installRuby
 };

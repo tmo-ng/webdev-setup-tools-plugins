@@ -451,6 +451,7 @@ let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
     });
 };
 
+
 module.exports = {
   getSystemCommand: getSystemCmd,
   findHighestCompatibleVersion: findHighestCompatibleVersion,
