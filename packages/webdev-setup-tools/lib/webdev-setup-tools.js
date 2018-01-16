@@ -9,6 +9,9 @@ const fs = require('fs');
 const readline = require('readline');
 
 const operatingSystem = os.platform().trim(); // supported values are darwin (osx), linux (ubuntu), and win32 ()
+const windows = (operatingSystem === 'win32');
+const homeDirectory = os.homedir();
+
 const scriptsDirectory = __dirname;
 const formattedOutputOptions = {
   resolve: (resolve, data) => {
@@ -25,6 +28,18 @@ let getProjectGlobals = (packageName) => {
   return webdevSetupTools[packageName];
 };
 
+// simplify updating environment variables to fewer files
+let sourceBashProfileFromBashrc = () => {
+  let bashRcPath = homeDirectory + '/.bashrc';
+  let profilePath = homeDirectory + '/.bash_profile';
+  if (windows || !fs.existsSync(bashRcPath) || !fs.existsSync(profilePath)) {
+    return;
+  }
+  let sourceBashRcPattern = /(?:source|.) (?:"\$HOME\/.bash_profile"|~\/.bash_profile)/;
+  if (!sourceBashRcPattern.test(fs.readFileSync(bashRcPath, 'utf8'))) {
+    fs.appendFileSync(bashRcPath, '. ~/.bash_profile\n');
+  }
+};
 
 // userGlobals - object mapping packages to versions
 // projectGlobals - global object listed in package.json at root
@@ -247,10 +262,11 @@ let displayUserPrompt = displayPrompt => new Promise((resolve) => {
 // refresh the path before running every command in powershell to handle full install
 let convertToPowershellCommand = systemCommand => 'powershell.exe -command \"$env:Path = ' + getSystemEnvironmentVariableForWindows('Path') + '; ' + systemCommand + ';\"';
 let convertToBashLoginCommand = systemCommand => 'bash -l -c \"' + systemCommand + '\"';
-let getSystemCmd = systemCommand => (operatingSystem === 'win32') ? convertToPowershellCommand(systemCommand) : convertToBashLoginCommand(systemCommand);
+
+let getSystemCmd = systemCommand => (windows) ? convertToPowershellCommand(systemCommand) : convertToBashLoginCommand(systemCommand);
 
 let goUpDirectories = numberOfDirectories => {
-  let splitValue = (operatingSystem === 'win32') ? '\\' : '/';
+  let splitValue = (windows) ? '\\' : '/';
   return scriptsDirectory.split(splitValue).slice(0, -numberOfDirectories).join(splitValue) + splitValue;
 };
 
@@ -355,7 +371,7 @@ let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
       'Check with your version control system documentation for this information.';
     console.log(alertNonGitUser);
   }
-  let folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
+  let folderSeparator = (windows) ? '\\' : '/';
   let lineSeparator = os.EOL;
 
   let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
@@ -405,7 +421,7 @@ let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
       'Check with your version control system documentation for this information.';
     console.log(alertNonGitUser);
   }
-  let folderSeparator = (operatingSystem === 'win32') ? '\\' : '/';
+  let folderSeparator = (windows) ? '\\' : '/';
   let lineSeparator = os.EOL;
 
   let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
@@ -434,6 +450,7 @@ let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
       return Object.assign(userVariables, userResponseMap);
     });
 };
+
 module.exports = {
   getSystemCommand: getSystemCmd,
   findHighestCompatibleVersion: findHighestCompatibleVersion,
@@ -461,5 +478,6 @@ module.exports = {
   getVariablesWithPrompt: getVariablesWithPrompt,
   getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt,
   getMissingVariables: getMissingVariables,
-  getMaxNodeVersion: getMaxNodeVersion
+  getMaxNodeVersion: getMaxNodeVersion,
+  sourceBashProfileFromBashrc: sourceBashProfileFromBashrc
 };

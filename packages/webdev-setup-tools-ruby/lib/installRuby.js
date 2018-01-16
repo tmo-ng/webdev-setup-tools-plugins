@@ -9,7 +9,10 @@ const operatingSystem = os.platform().trim();
 const windows = (operatingSystem === 'win32');
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
-const rubySemanticVersion = setup.getProjectGlobals('ruby').install; // global semantic version range
+
+
+const rubyGlobals = setup.getProjectGlobals('ruby') || {};
+const rubySemanticVersion = rubyGlobals.install; // global semantic version range
 const globalRubyObject = {ruby: rubySemanticVersion};
 
 const homeDirectory = os.homedir();
@@ -90,15 +93,20 @@ let updateDotFiles = (files, dataToWrite) => {
   })));
 
 };
-let installRvm = installRvmForMacLinux => {
+let installRvm = () => {
   console.log('installing rvm now');
+  // download without using curl
+  let rvmPath = homeDirectory + '/.install_rvm';
   let sourceRvm = '[ -s \"$HOME/.rvm/scripts/rvm\" ] && \\. \"$HOME/.rvm/scripts/rvm\"';
   let exportRvmPath = 'export PATH=\"$PATH:$HOME/.rvm/bin\"';
-  return setup.executeSystemCommand(installRvmForMacLinux, formatOutput)
-    .then(() => { // update environment variables
-      return updateDotFiles([homeDirectory + '/.bash_profile', homeDirectory + '/.profile', homeDirectory + '/.bashrc', homeDirectory + '/.zshrc'],
-        [sourceRvm, exportRvmPath]);
-    });
+  let rvmScriptUrl = 'https://get.rvm.io';
+  return setup.downloadPackage(rvmScriptUrl, rvmPath)
+    .then(() => {
+      fs.chmodSync(rvmPath, 0o755);
+      return setup.executeSystemCommand(setup.getSystemCommand(rvmPath) + ' -- --ignore-dotfiles', formatOutput);
+    })
+    .then(() => updateDotFiles([homeDirectory + '/.bash_profile', homeDirectory + '/.profile', homeDirectory + '/.zshrc'], [sourceRvm, exportRvmPath])
+      .then(() => setup.sourceBashProfileFromBashrc()));
 };
 let installRubyWithRvm = (remoteRubyVersion, environment) => {
   let installRubyCommand = setup.getSystemCommand('rvm install ' + remoteRubyVersion);
@@ -106,7 +114,6 @@ let installRubyWithRvm = (remoteRubyVersion, environment) => {
     .then(() => remoteRubyVersion);
 };
 let installRvmOnMacOrLinux = () => {
-  let installRvmForMacLinux = 'curl -sSL https://get.rvm.io | bash -s';
   let rvmGetAllRemoteRubyVersions = setup.getSystemCommand('rvm list known');
   let rvmGetAllLocalRubyVersions = setup.getSystemCommand('rvm list');
   let rvmSetLocalRubyDefault = 'rvm alias create default ';
@@ -117,7 +124,7 @@ let installRvmOnMacOrLinux = () => {
   let processEnv = process.env;
   processEnv.PATH = (processEnv.PATH.includes(rvmPath)) ? processEnv.PATH : processEnv.PATH + ':' + rvmPath;
 
-  return Promise.resolve((rvmInstalled || rvmInPath) ? '' : installRvm(installRvmForMacLinux))
+  return Promise.resolve((rvmInstalled || rvmInPath) ? '' : installRvm())
     .then(() => { // find highest local version of ruby installed
       let getLocalRubyOptions = {
         resolve: (resolve, data) => {
@@ -155,12 +162,16 @@ let installRvmOnMacOrLinux = () => {
       }
     })
     .then(rubyVersion => { // set the new version as default
-      if (rubyVersion) {
-        return setup.executeSystemCommand(setup.getSystemCommand(rvmSetLocalRubyDefault + rubyVersion), formatOutput, processEnv)
-          .then(() => {
-            console.log('ruby install complete. default version is now ' + rubyVersion + '.');
-          });
+      if (!rubyVersion) {
+        return Promise.resolve('ruby install complete. No rubies were installed.');
       }
+      return setup.executeSystemCommand(setup.getSystemCommand(rvmSetLocalRubyDefault + rubyVersion), formatOutput, processEnv)
+        .then(() => {
+          return Promise.resolve('ruby install complete. default version is now ' + rubyVersion + '.');
+        });
+    })
+    .then(message => {
+      console.log(message);
     })
     .catch(error => { // handle failure
       console.log('ruby install failed with the following message:\n' + error);

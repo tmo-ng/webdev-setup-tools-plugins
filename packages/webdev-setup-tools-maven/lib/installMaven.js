@@ -26,18 +26,23 @@ let setEnvironmentVariables = unzippedFolderPath => {
     let setAllPathVariables = setM2Home + commandSeparator + setMavenHome + commandSeparator + setSystemPath;
     return setup.executeSystemCommand(setup.getSystemCommand(setAllPathVariables), formatOutput);
   } else {
-    let outFile = (operatingSystem === 'darwin') ? '.bash_profile' : '.bashrc';
-    let maven_vars = {'export M2_HOME': '/usr/local/maven', 'export MAVEN_HOME': '/usr/local/maven', 'export PATH': '/usr/local/maven/bin:$PATH'};
+    let srcFile = homeDirectory + '/.bash_profile';
+    let maven_vars = {'export PATH': '/usr/local/maven/bin:$PATH', 'export M2_HOME': '/usr/local/maven', 'export MAVEN_HOME': '/usr/local/maven'};
     let mvnConfigVars = Object.keys(maven_vars);
-    let profileVariables = setup.getMissingVariables(homeDirectory + '/' + outFile, mvnConfigVars);
+    let profileVariables = setup.getMissingVariables(srcFile, mvnConfigVars);
     let existingVars = profileVariables.foundVariables || {};
-    mvnConfigVars.forEach(maven_variable => {
-      let existingVar = existingVars[maven_variable];
-      let requiredVar = maven_vars[maven_variable];
-      if ((Array.isArray(existingVar) && !existingVar.includes(requiredVar)) || (!Array.isArray(existingVar) && existingVar !== requiredVar)) {
-        fs.appendFileSync(homeDirectory + '/' + outFile, maven_variable + '=' + requiredVar + '\n');
-      }
-    });
+    let dataToWrite = mvnConfigVars.reduce((totalData, mavenVariable) => {
+      let existingVar = existingVars[mavenVariable];
+      let requiredVar = maven_vars[mavenVariable];
+
+      // avoid polluting startup files with additional references to maven
+      let addMvnVar = (Array.isArray(existingVar) && !existingVar.includes(requiredVar)) || (!Array.isArray(existingVar) && existingVar !== requiredVar);
+      return (addMvnVar) ? totalData + mavenVariable + '=' + requiredVar + '\n' : totalData;
+    }, '');
+    if (dataToWrite !== '') {
+      fs.appendFileSync(srcFile, '\n# maven path configuration variables added by webdev-setup-tools-maven\n' + dataToWrite);
+    }
+    setup.sourceBashProfileFromBashrc();
     let createSymbolicLinkToMaven = 'sudo ln -sfn ' + unzippedFolderPath + ' /usr/local/maven';
     return setup.executeSystemCommand(createSymbolicLinkToMaven, formatOutput);
   }

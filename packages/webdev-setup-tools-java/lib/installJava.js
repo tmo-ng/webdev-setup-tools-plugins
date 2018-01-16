@@ -4,8 +4,8 @@
 const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
-
 const operatingSystem = os.platform().trim();
+const windows = (operatingSystem === 'win32');
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 const requiredJavaVersion = setup.getProjectGlobals('java');
@@ -18,38 +18,38 @@ let walkThroughjdkInstall = () => {
         .then(() => setup.displayUserPrompt('accept the license agreement, then download the version matching your operating system.' +
             '\nFor most Apple OSX configurations, this auto configures your path, so you can ignore the subsequent steps.'))
         .then(() => {
-            if (operatingSystem === 'win32') {
+            if (windows) {
                 return setup.displayUserPrompt('accept the default path and tools for your new java installation.');
             }
         })
         .then(() => setup.displayUserPrompt('after the download, you will need to first unzip this folder,\nthen add this location to your system path.'))
         .then(() => {
-            let displayPrompt = (operatingSystem === 'win32') ? 'type "environment variables" into your start button menu or search bar and click enter.' : 'press ctrl + alt + t to launch a terminal';
+            let displayPrompt = (windows) ? 'type "environment variables" into your start button menu or search bar and click enter.' : 'press ctrl + alt + t to launch a terminal';
             return setup.displayUserPrompt(displayPrompt);
         })
         .then(() => {
-            let displayPrompt = (operatingSystem === 'win32') ? 'click on the "environment variables" button near the bottom.' : 'type nano (or your text editor of choice) ~/.bash_profile (.bashrc, .bash_profile, .zshrc, etc.) and press enter';
+            let displayPrompt = (windows) ? 'click on the "environment variables" button near the bottom.' : 'type nano (or your text editor of choice) ~/.bash_profile';
             return setup.displayUserPrompt(displayPrompt);
         })
         .then(() => {
-            let displayPrompt = (operatingSystem === 'win32') ? 'in the lower window marked "system variables" you should see a variable marked "Path".\nClick on this value to modify it.' :
+            let displayPrompt = (windows) ? 'in the lower window marked "system variables" you should see a variable marked "Path".\nClick on this value to modify it.' :
                 'Scroll to the end of the file. If java has not been added to your environment, you can add it with the followind:\nJAVA_HOME=/usr/lib/jvm/{your java version here}\nexport JAVA_HOME\nSave the file and exit. ' +
                 'reload the system path by pressing . /etc/environment or close the terminal.';
             return setup.displayUserPrompt(displayPrompt);
         })
         .then(() => {
-            if (operatingSystem === 'win32') {
+            if (windows) {
                 return setup.displayUserPrompt('click on the button labeled "New", or double click on "Path"');
             }
         })
         .then(() => {
-            if (operatingSystem === 'win32') {
+            if (windows) {
                 return setup.displayUserPrompt('paste the path to your java sdk in this box. typically, this path is of ' +
                     'the form\nC:\\Program Files\\Java\\jdk1.8.0_141\\bin, but this is unique to each installation.');
             }
         })
         .then(() => {
-            if (operatingSystem === 'win32') {
+            if (windows) {
                 return setup.displayUserPrompt('Next, you will need to add a System Variable for "JAVA_HOME".\nClick new under the box for system variables.\nA box should pop up with values ' +
                     'for the variable name and the value. Enter "JAVA_HOME" as the name.\nFor the value, Enter "C:\\Program Files\\Java\\jdk1.8.0_141", but this is unique to each installation.');
             }

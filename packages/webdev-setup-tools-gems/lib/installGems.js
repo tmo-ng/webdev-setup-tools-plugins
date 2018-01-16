@@ -5,7 +5,10 @@ const setup = require('webdev-setup-tools');
 const os = require('os');
 
 const operatingSystem = os.platform().trim();
-const globalGems = setup.getProjectGlobals('ruby').gems;
+const windows = (operatingSystem === 'win32');
+
+const gemGlobals = setup.getProjectGlobals('ruby') || {};
+const globalGems = gemGlobals.gems || {};
 const formatOutput = setup.getOutputOptions();
 
 let installGems = () => {
@@ -13,7 +16,7 @@ let installGems = () => {
   let getGlobals = modules => setup.getAllUserGlobals(modules, gemVersionPattern);
   let findVersion = (dependency, projectGlobals) => {
     //powershell.exe -command "gem list `\"^^sass`$`\" -r -a"
-    let searchPattern = (operatingSystem === 'win32') ? '`\\"^^' + dependency + '`$`\\"' : '^' + dependency + '$';
+    let searchPattern = (windows) ? '`\\"^^' + dependency + '`$`\\"' : '^' + dependency + '$';
     let gemListRemote = setup.getSystemCommand('gem list ' + searchPattern + ' -r -a');
     return setup.findHighestCompatibleVersion(dependency, projectGlobals, gemListRemote);
   };
