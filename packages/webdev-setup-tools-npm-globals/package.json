@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-npm-globals",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "Set up npm packages for development tasks",
   "main": "lib/installNpmGlobals.js",
   "scripts": {
