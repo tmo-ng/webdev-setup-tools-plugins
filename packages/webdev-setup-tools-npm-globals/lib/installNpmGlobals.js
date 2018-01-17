@@ -59,7 +59,7 @@ let installGlobalNpmDependencies = () => {
       if (userState.windows && userState.windows.optional.length > 0) {
         console.log('windows updates exist for the following packages: ');
         setup.listOptionals(userState.windows.optional);
-        return setup.confirmOptionalInstallation('do you want to install these optional windows updates now (y/n)?  ',
+        return setup.confirmOptionalInstallation('do you want to install these optional windows updates now (y/n)? ',
           () => setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.windows.optional, npmInstallModuleAsGlobal, '@')), formatOutput));
       }
 
@@ -68,7 +68,7 @@ let installGlobalNpmDependencies = () => {
       if (userState.npm.optional.length > 0) {
         console.log('npm updates exist for the following packages: ');
         setup.listOptionals(userState.npm.optional);
-        return setup.confirmOptionalInstallation('do you want to install these optional npm updates now (y/n)?  ',
+        return setup.confirmOptionalInstallation('do you want to install these optional npm updates now (y/n)? ',
           () => setup.executeSystemCommand(setup.getSystemCommand(setup.getInstallationCommand(userState.npm.optional, npmInstallModuleAsGlobal, '@')), formatOutput));
       }
     })

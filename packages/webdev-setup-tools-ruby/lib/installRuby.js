@@ -93,7 +93,7 @@ let updateDotFiles = (files, dataToWrite) => {
 
 };
 let installRvm = () => {
-  console.log('installing rvm now');
+  console.log('installing ruby version manager now');
   // download without using curl
   let rvmPath = homeDirectory + '/.install_rvm';
   let sourceRvm = '[ -s \"$HOME/.rvm/scripts/rvm\" ] && \\. \"$HOME/.rvm/scripts/rvm\"';
@@ -102,10 +102,21 @@ let installRvm = () => {
   return setup.downloadPackage(rvmScriptUrl, rvmPath)
     .then(() => {
       fs.chmodSync(rvmPath, 0o755);
-      return setup.executeSystemCommand(setup.getSystemCommand(rvmPath) + ' -- --ignore-dotfiles', formatOutput);
+      return setup.executeSystemCommand(setup.getSystemCommand(rvmPath + ' --ignore-dotfiles'), formatOutput);
     })
-    .then(() => updateDotFiles([homeDirectory + '/.bash_profile', homeDirectory + '/.profile', homeDirectory + '/.zshrc'], [sourceRvm, exportRvmPath])
-      .then(() => setup.sourceBashProfileFromBashrc()));
+    .then(() => updateDotFiles([homeDirectory + '/.bash_profile', homeDirectory + '/.profile', homeDirectory + '/.zshrc'], [sourceRvm, exportRvmPath]))
+    .then(() => setup.sourceStartupScipt('.bash_profile', '.bashrc'))
+    .then(() => {
+      let rvmRcPath = homeDirectory + '/.rvmrc';
+      let prompt = '\nBy default rvm will alert you when it\n' +
+        'is not the first entry in your environment path.\n' +
+        'These alerts can become annoying, and this is generally not important\n' +
+        'as long as ruby is not installed in another location on your computer.\n' +
+        'Would you like to silence rvm alerts when it is not at the front of your environment path(y/n)? ';
+      let silenceMismatch = 'rvm_silence_path_mismatch_check_flag=1';
+      let displayOptionalPrompt = !fs.existsSync(rvmRcPath) || !fs.readFileSync(rvmRcPath, 'utf8').includes(silenceMismatch);
+      return Promise.resolve((displayOptionalPrompt) ? setup.confirmOptionalInstallation(prompt, () => fs.appendFileSync(rvmRcPath, silenceMismatch + '\n')) : '');
+    });
 };
 let installRubyWithRvm = (remoteRubyVersion, environment) => {
   let installRubyCommand = setup.getSystemCommand('rvm install ' + remoteRubyVersion);
@@ -169,12 +180,8 @@ let installRvmOnMacOrLinux = () => {
           return Promise.resolve('ruby install complete. default version is now ' + rubyVersion + '.');
         });
     })
-    .then(message => {
-      console.log(message);
-    })
-    .catch(error => { // handle failure
-      console.log('ruby install failed with the following message:\n' + error);
-    });
+    .then(message => console.log(message))
+    .catch(error => console.log('ruby install failed with the following message:\n' + error));
 };
 
 module.exports = {

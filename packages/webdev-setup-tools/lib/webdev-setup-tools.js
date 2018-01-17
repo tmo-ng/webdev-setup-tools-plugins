@@ -11,6 +11,7 @@ const readline = require('readline');
 const operatingSystem = os.platform().trim(); // supported values are darwin (osx), linux (ubuntu), and win32 ()
 const windows = (operatingSystem === 'win32');
 const homeDirectory = os.homedir();
+const folderSeparator = (windows) ? '\\' : '/';
 
 const scriptsDirectory = __dirname;
 const formattedOutputOptions = {
@@ -41,6 +42,19 @@ let sourceBashProfileFromBashrc = () => {
   }
 };
 
+// fileToUpdate - name of dotfile script in home directory that will be updated e.g. .bash_profile
+// fileToSource - name of the startup script that will be sourced in e.g. .profile
+let sourceStartupScipt = (fileToSource, fileToUpdate) => {
+  let updateFilePath = homeDirectory + folderSeparator + fileToUpdate;
+  let sourceFilePath = homeDirectory + folderSeparator + fileToSource;
+  if (windows || !fs.existsSync(updateFilePath) || !fs.existsSync(sourceFilePath)) {
+    return;
+  }
+  let sourceBashRcPattern = new RegExp('(?:source|.) (?:"\\$HOME\\/' + fileToSource +'"|~\\/' + fileToSource + ')');
+  if (!sourceBashRcPattern.test(fs.readFileSync(updateFilePath, 'utf8'))) {
+    fs.appendFileSync(updateFilePath, '\n\n# source file added by webdev-setup-tools\n. ~/' + fileToSource + '\n');
+  }
+};
 // userGlobals - object mapping packages to versions
 // projectGlobals - global object listed in package.json at root
 // packageArray - array of module objects with name and highestCompatibleVersion properties
@@ -371,7 +385,6 @@ let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
       'Check with your version control system documentation for this information.';
     console.log(alertNonGitUser);
   }
-  let folderSeparator = (windows) ? '\\' : '/';
   let lineSeparator = os.EOL;
 
   let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
@@ -421,7 +434,6 @@ let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
       'Check with your version control system documentation for this information.';
     console.log(alertNonGitUser);
   }
-  let folderSeparator = (windows) ? '\\' : '/';
   let lineSeparator = os.EOL;
 
   let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
@@ -479,5 +491,6 @@ module.exports = {
   getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt,
   getMissingVariables: getMissingVariables,
   getMaxNodeVersion: getMaxNodeVersion,
-  sourceBashProfileFromBashrc: sourceBashProfileFromBashrc
+  sourceBashProfileFromBashrc: sourceBashProfileFromBashrc,
+  sourceStartupScipt: sourceStartupScipt
 };

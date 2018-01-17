@@ -39,10 +39,12 @@ let setEnvironmentVariables = unzippedFolderPath => {
       let addMvnVar = (Array.isArray(existingVar) && !existingVar.includes(requiredVar)) || (!Array.isArray(existingVar) && existingVar !== requiredVar);
       return (addMvnVar) ? totalData + mavenVariable + '=' + requiredVar + '\n' : totalData;
     }, '');
+
     if (dataToWrite !== '') {
       fs.appendFileSync(srcFile, '\n# maven path configuration variables added by webdev-setup-tools-maven\n' + dataToWrite);
     }
-    setup.sourceBashProfileFromBashrc();
+
+    setup.sourceStartupScipt('.bash_profile', '.bashrc');
     let createSymbolicLinkToMaven = 'sudo ln -sfn ' + unzippedFolderPath + ' /usr/local/maven';
     return setup.executeSystemCommand(createSymbolicLinkToMaven, formatOutput);
   }
@@ -105,7 +107,7 @@ let installMaven = () => {
         console.log('installing required maven update now.');
         return installMavenOnHost(remoteMaven);
       } else if (mavenUpdates.optional.length > 0) {
-        return setup.confirmOptionalInstallation('a newer maven version is now available.\nDo you want to upgrade now (y/n)?  ', () => installMavenOnHost(remoteMaven));
+        return setup.confirmOptionalInstallation('a newer maven version is now available.\nDo you want to upgrade now (y/n)? ', () => installMavenOnHost(remoteMaven));
       } else {
         console.log('your local maven version is up to date.');
       }
