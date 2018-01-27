@@ -5,11 +5,11 @@ const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
 const fs = require('fs');
+
 const operatingSystem = os.platform().trim();
 const windows = (operatingSystem === 'win32');
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
-
 
 const rubyGlobals = setup.getProjectGlobals('ruby') || {};
 const rubySemanticVersion = rubyGlobals.install; // global semantic version range
