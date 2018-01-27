@@ -10,6 +10,7 @@ const windows = (operatingSystem === 'win32');
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
 
+
 const rubyGlobals = setup.getProjectGlobals('ruby') || {};
 const rubySemanticVersion = rubyGlobals.install; // global semantic version range
 const globalRubyObject = {ruby: rubySemanticVersion};
