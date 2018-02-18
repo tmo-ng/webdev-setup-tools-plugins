@@ -79,11 +79,12 @@ let installMavenOnHost = (mavenDownload) => {
 
       return setEnvironmentVariables(unzippedFolderPath);
     })
-    .then(() => { // notify user of success
+    .then(() => {
       console.log('successfully installed maven version ' + mavenVersion);
     })
-    .catch(error => { // notify user of failure and reason
+    .catch(error => {
       console.log('Failed to install maven with the following message:\n' + error);
+      process.exit(0);
     });
 };
 let installMaven = () => {
@@ -118,6 +119,7 @@ let installMaven = () => {
     })
     .catch(error => {
       console.log('maven install failed with the following message:\n' + error);
+      process.exit(0);
     });
 };
 

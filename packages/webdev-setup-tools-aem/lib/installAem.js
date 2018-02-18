@@ -63,7 +63,7 @@ let installAemDependencies = (customPrompts) => {
 };
 
 function overwriteExistingAEM() {
-  return setup.confirmOptionalInstallation('Found existing AEM installation, would you like to overwrite this(y/n)?  ', () => {
+  return setup.confirmOptionalInstallation('Found existing AEM installation, would you like to overwrite this(y/n)? ', () => {
     let deleteDirectory = (windows) ? 'rd /s /q \"' + aem_folder_path + '\"' : 'rm -rf ' + aem_folder_path;
     return setup.executeSystemCommand(deleteDirectory, formatOutput)
       .then(() => aemInstallationProcedure())
@@ -173,33 +173,33 @@ let startAemServer = (jarName) =>{
     startServer += (windows) ? ', \'' + option + '\'' : ' ' + option;
   });
   startServer += (windows) ? '' : ' &';
-  setup.executeSystemCommand(setup.getSystemCommand(startServer), formatOutput);
+  setup.executeSystemCommand(setup.getSystemCommand(startServer), {resolve: formatOutput.resolve});
 };
 let downloadAllAemFiles = () => {
-  let missingFiles = {};
-  let previousInstall = false;
-  Object.keys(content_files).forEach(file => {
-    if (!fs.existsSync(download_path + file)) {
-      missingFiles[file] = content_files[file];
-    } else {
-      previousInstall = true;
+  let contentFilenames = Object.keys(content_files);
+  let missingFiles = contentFilenames.reduce((fileMap, fileName) => {
+    if (!fs.existsSync(download_path + fileName)) {
+      fileMap[fileName] = content_files[fileName];
     }
-  });
-  let useExistingFiles = 'Existing AEM content files were found, would you like to use these files(y/n)? ';
-  let defaultOption = new Promise((resolve) => {
-    setTimeout(resolve, 10 * seconds, missingFiles);
-  });
+    return fileMap;
+  }, {});
 
-  let optionsArray = [defaultOption, setup.confirmOptionalInstallation(useExistingFiles, () => {
-    return missingFiles;
-  }, () => {
-    return content_files;
-  })];
-
-  return Promise.resolve((previousInstall) ? Promise.race(optionsArray) : content_files)
+  let existingFiles = contentFilenames.length !== Object.keys(missingFiles).length;
+  let optionsArray = (!existingFiles) ? [] : [ // avoid creating promises when no files exist
+    new Promise((resolve) => {
+      setTimeout(resolve, 10 * seconds, missingFiles);
+    }),
+    new Promise((resolve) => {
+      let useExistingFiles = 'Existing AEM content files were found, would you like to use these files(y/n)? ';
+      setup.confirmOptionalInstallation(useExistingFiles, () => {
+        resolve(missingFiles);
+      }, () => {
+        resolve(content_files);
+      })
+    })
+  ];
+  return Promise.resolve((existingFiles) ? Promise.race(optionsArray) : content_files)
     .then(files => {
-      let downloadMessage = (files === missingFiles) ? '\nusing existing content files' : '\ndownloading all content files';
-      console.log(downloadMessage);
       return setup.runListOfPromises(files, (dependency, globalPackage) => {
         console.log('downloading aem dependency ' + dependency);
         return setup.downloadPackage(globalPackage[dependency], download_path + dependency);
@@ -218,8 +218,10 @@ let stopAemProcess = () => {
       console.log('shutting down the aem quickstart server');
       let endPortProcess = (windows) ? 'taskkill /F /PID ' : 'kill ';
       return setup.executeSystemCommand(endPortProcess + processId, formatOutput);
-    }).catch(error => {
+    })
+    .catch(error => {
       console.log('failed to shutdown server on port ' + port + ' with error\n' + error);
+      process.exit(0);
     });
 };
 let aemInstallationProcedure = () => {

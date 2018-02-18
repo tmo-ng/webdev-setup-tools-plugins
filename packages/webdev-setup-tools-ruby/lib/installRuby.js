@@ -67,6 +67,7 @@ let installRubyOnWindows = () => {
     })
     .catch(error => {
       console.log('ruby install failed with the following message:\n' + error);
+      process.exit(0);
     });
 };
 let updateDotFiles = (files, dataToWrite) => {
@@ -182,7 +183,10 @@ let installRvmOnMacOrLinux = () => {
         });
     })
     .then(message => console.log(message))
-    .catch(error => console.log('ruby install failed with the following message:\n' + error));
+    .catch(error => {
+      console.log('ruby install failed with the following message:\n' + error);
+      process.exit(0);
+    });
 };
 
 module.exports = {

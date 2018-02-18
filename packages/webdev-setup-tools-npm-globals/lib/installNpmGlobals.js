@@ -26,7 +26,8 @@ let installGlobalNpmDependencies = () => {
   console.log('gettling installed node modules.');
   return setup.findUserGlobals(npmListUserGlobals, getGlobals)
     .catch(error => { // this will catch if the user has unmet dependencies on existing npm packages
-      console.log(error);
+      console.error('Failed to find npm globals with the following error:\n', error);
+      process.exit(0);
     })
     .then(userGlobals => {
       userState.userGlobals = userGlobals;
@@ -78,6 +79,7 @@ let installGlobalNpmDependencies = () => {
     })
     .catch(error => {
       console.error('Failed to install npm packages with the following message:\n', error);
+      process.exit(0);
     });
 };
 

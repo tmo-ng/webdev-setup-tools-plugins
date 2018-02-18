@@ -53,6 +53,7 @@ let installGems = () => {
     })
     .catch(error => {
       console.log('failed to install required gems with the following message:\n' + error);
+      process.exit(0);
     });
 };
 
