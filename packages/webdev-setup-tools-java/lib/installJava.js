@@ -35,8 +35,12 @@ const arrayOfPrompts = [ // hold all hardcoded string values for the steps in jd
   },
   {
     darwin: 'Click on the downloaded file to run the installer. For most MacOs configurations, this automatically adds the jdk to your environment.',
-    linux: 'Click on the downloaded tar.gz, or run the command "tar -xf /path/to/download -C /desired/install/directory" in a terminal',
-    win32: 'Click on downloaded windows-x64.exe to start file to start the installer'
+    linux: 'Click on the downloaded tar.gz to extract it, or run the command "tar -xf /path/to/download -C /desired/install/directory" in a terminal',
+    win32: 'Click on downloaded windows-x64.exe to start the jdk installer'
+  },
+  {
+    linux: 'Once you have successfully extracted the tar.gz, press enter to add the jdk to your path',
+    win32: 'Once you have successfully completed the windows jdk installer, press enter to add the jdk to your path'
   }
 ];
 
@@ -113,6 +117,10 @@ let addJdkToSystemPath = (jdkPath) => {
   let javaConfigVars = Object.keys(javaEnvVars);
   let quotesPattern = /["']/;
   let existingVars = setup.getVariablesFromFile(srcFile, '=');
+  Object.keys(existingVars).forEach(envVar => { // trim quotes to make precise comparison
+    let previousVar = existingVars[envVar];
+    existingVars[envVar] = (Array.isArray(previousVar)) ? previousVar.map(element => element.split(quotesPattern).join('')) : previousVar.split(quotesPattern).join('');
+  });
   let dataToWrite = javaConfigVars.reduce((totalData, javaVariable) => {
     let existingVar = existingVars[javaVariable];
     let requiredVar = javaEnvVars[javaVariable];
