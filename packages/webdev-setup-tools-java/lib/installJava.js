@@ -100,17 +100,16 @@ let addJdkToSystemPath = (jdkPath) => {
   if (typeof jdkPath !== 'string') {
     return Promise.reject('jdk path argument must be a string')
   }
-  let pathToJdk = path.join(jdkPath, 'bin');
   console.log('Adding java to your environment');
   if (windows) {
-    let setJavaHome = setup.setWindowsEnvironmentVariable('JAVA_HOME', '\'' + pathToJdk + '\'');
+    let setJavaHome = setup.setWindowsEnvironmentVariable('JAVA_HOME', '\'' + jdkPath + '\'');
     let setSystemPath = '$old_path = ' + setup.getWindowsEnvironmentVariable('path') +
-      '; $new_path = \'' + pathToJdk + '\' + \';\' + $old_path; ' +
+      '; $new_path = \'' + path.join(jdkPath, 'bin') + '\' + \';\' + $old_path; ' +
       setup.setWindowsEnvironmentVariable('path', '$new_path');
     return setup.executeSystemCommand(setup.getSystemCommand(setJavaHome + '; ' + setSystemPath), formatOutput);
   }
   let srcFile = homeDirectory + '/.bash_profile';
-  let javaEnvVars = {'export JAVA_HOME': pathToJdk, 'export PATH': pathToJdk + ':$PATH'};
+  let javaEnvVars = {'export JAVA_HOME': jdkPath, 'export PATH': path.join(jdkPath, 'bin') + ':$PATH'};
   let javaConfigVars = Object.keys(javaEnvVars);
   let quotesPattern = /["']/;
   let existingVars = setup.getVariablesFromFile(srcFile, '=');
@@ -140,7 +139,8 @@ let findPathToJdk = () => {
         var_name: 'jdkPath'
       }],
     jdkPath => {
-      let validJdkPath = fs.existsSync(path.join(jdkPath,'bin','javac'));
+      let javaCompiler = (windows) ? 'javac.exe' : 'javac';
+      let validJdkPath = fs.existsSync(path.join(jdkPath,'bin', javaCompiler));
       if (!validJdkPath) {
         console.log('Failed to find jdk with the given path.');
       }
@@ -183,7 +183,7 @@ let installJava = (customJavaVersionRange) => {
     .then(javaCompilerVersion => {
       let formattedVersion = getJavaVersion(javaCompilerVersion);
       let version = formattedVersion.match(versionPattern);
-      if (!semver.outside(version[0], requiredJavaVersion, '<')) {
+      if (version && !semver.outside(version[0], requiredJavaVersion, '<')) {
         console.log('java version ' + version[0] + ' is up to date');
         return Promise.resolve();
       }
