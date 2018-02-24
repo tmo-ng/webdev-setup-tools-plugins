@@ -15,7 +15,19 @@ let fullInstall = () => {
     .then(() => npm.installNpmGlobalPackages())
     .then(() => java.installJava())
     .then(() => maven.installMaven())
-    .then(() => aem.installAem())
+    .then(() => aem.installAem([{
+        display: 'What is the path to the pom.xml (example: ~/project)? ',
+        var_name: 'mvn_config_dir'
+      },
+      {
+        display: 'Where you would like to download AEM content files ',
+        var_name: 'download_path_dir'
+      },
+      {
+        display: 'Where would you like AEM to be installed ',
+        var_name: 'aem_install_dir'
+      }
+    ]))
     .then(() => setup.endProcessWithMessage('You are now ready to begin development.'
       , 5 * seconds, 0));
 };

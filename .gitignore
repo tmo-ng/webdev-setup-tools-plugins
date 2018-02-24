@@ -1,3 +1,11 @@
 .idea
 node_modules/
 lerna-debug.log
+setup.json
+packages/webdev-setup-tools/yarn-error.log
+packages/webdev-setup-tools-aem/yarn-error.log
+packages/webdev-setup-tools-gems/yarn-error.log
+packages/webdev-setup-tools-java/yarn-error.log
+packages/webdev-setup-tools-maven/yarn-error.log
+packages/webdev-setup-tools-npm-globals/yarn-error.log
+packages/webdev-setup-tools-ruby/yarn-error.log

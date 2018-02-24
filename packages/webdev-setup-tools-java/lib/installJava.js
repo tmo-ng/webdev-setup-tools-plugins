@@ -4,92 +4,191 @@
 const setup = require('webdev-setup-tools');
 const semver = require('semver');
 const os = require('os');
+const fs = require('fs');
+const path = require('path');
+
+const homeDirectory = os.homedir();
 const operatingSystem = os.platform().trim();
 const windows = (operatingSystem === 'win32');
+const folderSeparator = (windows) ? '\\' : '/';
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
-const requiredJavaVersion = setup.getProjectGlobals('java');
+const javaCompilerVersionSplitter = /[^\d]+/;
+const globalJavaVersionRange = setup.getProjectGlobals('java');
+let jdkDownloadMatcher = (windows) ? /jdk-.*windows-x64.*exe/ : /jdk-.*linux-x64.*tar.gz/;
+
+const arrayOfPrompts = [ // hold all hardcoded string values for the steps in jdk installation
+  {
+    all: 'This prompt will walk you through the installation and setup of the official oracle java jdk.' +
+    '\nWhen a step has been completed, press enter to continue to the next step. Please press enter to begin.'
+  },
+  {
+    all: 'go to the url http://www.oracle.com/technetwork/java/javase/downloads'
+  },
+  {
+    all: 'click on the jdk download link to be redirected to the download page for all systems.'
+  },
+  {
+    linux: 'accept the license agreement, then download the linux-x64.tar.gz file',
+    darwin: 'accept the license agreement, then download the osx-x64.dmg file',
+    win32: 'accept the license agreement, then download windows-x64.exe file'
+  },
+  {
+    darwin: 'Click on the downloaded file to run the installer. For most MacOs configurations, this automatically adds the jdk to your environment.',
+    linux: 'Click on the downloaded tar.gz, or run the command "tar -xf /path/to/download -C /desired/install/directory" in a terminal',
+    win32: 'Click on downloaded windows-x64.exe to start file to start the installer'
+  }
+];
+
+let displayJavaPrompts = (javaPrompts) => {
+  return javaPrompts.reduce((promise, variable) => promise.then(() => new Promise((resolve) => {
+    (function promptForValue() {
+      let promptForUser = variable.all || variable[operatingSystem];
+      return (promptForUser) ? setup.displayUserPrompt(promptForUser).then(() => resolve()) : resolve();
+    })();
+  })), Promise.resolve());
+};
+
+let confirmFileToInstall = (arrayOfFiles) => {
+  if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
+    return Promise.resolve();
+  }
+
+  return arrayOfFiles.reduce((promise, fileName) => promise.then((jdkInstallerObject) => new Promise((resolve) => {
+    (function promptForValue() {
+      if (jdkInstallerObject.hasOwnProperty('jdk_installer_file')) {
+        return resolve(jdkInstallerObject);
+      }
+      let promptForUser = 'found the file ' + fileName + '. Is this the file you would like installed(y/n)? ';
+      return setup.confirmOptionalInstallation(promptForUser, () => resolve({jdk_installer_file: fileName}), () => resolve(jdkInstallerObject));
+    })();
+  })), Promise.resolve({}));
+};
+
+
+let findJavaDownload = (javaVersion) => {
+  if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
+    return Promise.resolve();
+  }
+  let versions = fs.readdirSync(homeDirectory + folderSeparator + 'Downloads')
+    .filter(file => jdkDownloadMatcher.test(file));
+
+  return Promise.resolve(versions);
+};
+
+let watchDownloadsFolder = (javaVersion) => {
+  return new Promise((resolve, reject) => {
+    fs.watch(homeDirectory + folderSeparator + 'Downloads', (eventType, filename) => {
+      console.log(`event type is: ${eventType}`);
+      if (filename) {
+        if (jdkDownloadMatcher.test(filename)) {
+
+          resolve(homeDirectory + folderSeparator + 'Downloads' + folderSeparator + filename);
+        }
+        console.log(`filename provided: ${filename}`);
+      } else {
+        resolve();
+        console.log('filename not provided');
+      }
+    });
+  });
+};
+let addJdkToSystemPath = (jdkPath) => {
+  if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
+    return Promise.resolve();
+  }
+  if (typeof jdkPath !== 'string') {
+    return Promise.reject('jdk path argument must be a string')
+  }
+  let pathToJdk = path.join(jdkPath, 'bin');
+  console.log('Adding java to your environment');
+  if (windows) {
+    let setJavaHome = setup.setWindowsEnvironmentVariable('JAVA_HOME', '\'' + pathToJdk + '\'');
+    let setSystemPath = '$old_path = ' + setup.getWindowsEnvironmentVariable('path') +
+      '; $new_path = \'' + pathToJdk + '\' + \';\' + $old_path; ' +
+      setup.setWindowsEnvironmentVariable('path', '$new_path');
+    return setup.executeSystemCommand(setup.getSystemCommand(setJavaHome + '; ' + setSystemPath), formatOutput);
+  }
+  let srcFile = homeDirectory + '/.bash_profile';
+  let javaEnvVars = {'export JAVA_HOME': pathToJdk, 'export PATH': pathToJdk + ':$PATH'};
+  let javaConfigVars = Object.keys(javaEnvVars);
+  let quotesPattern = /["']/;
+  let existingVars = setup.getVariablesFromFile(srcFile, '=');
+  let dataToWrite = javaConfigVars.reduce((totalData, javaVariable) => {
+    let existingVar = existingVars[javaVariable];
+    let requiredVar = javaEnvVars[javaVariable];
+    // avoid repeatedly adding java env vars to startup scripts
+    let addJavaVar = (Array.isArray(existingVar) && !existingVar.includes(requiredVar)) || (!Array.isArray(existingVar) && existingVar !== requiredVar);
+    return (addJavaVar) ? totalData + javaVariable + '="' + requiredVar + '"\n' : totalData;
+  }, '');
+
+  if (dataToWrite !== '') {
+    fs.appendFileSync(srcFile, '\n# java path configuration variables added by webdev-setup-tools-java\n' + dataToWrite);
+  }
+
+  setup.sourceStartupScipt('.bash_profile', '.bashrc');
+};
+
+let findPathToJdk = () => {
+  if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
+    return Promise.resolve();
+  }
+  let examplePath = (windows) ? 'C:\\Program Files\\Java\\jdk1.8.0' : '/usr/local/jdk1.8.0';
+  return setup.getVariablesWithPrompt([
+      {
+        display: 'Please enter the full path to the extracted jdk folder (example: ' + examplePath + '): ',
+        var_name: 'jdkPath'
+      }],
+    jdkPath => {
+      let validJdkPath = fs.existsSync(path.join(jdkPath,'bin','javac'));
+      if (!validJdkPath) {
+        console.log('Failed to find jdk with the given path.');
+      }
+      return validJdkPath;
+    })
+    .then(jdkObj => Promise.resolve(jdkObj['jdkPath']));
+};
 
 let walkThroughjdkInstall = () => {
-  return setup.displayUserPrompt('This prompt will walk you through\nthe installation and setup of the official oracle java jdk.' +
-    '\nWhen a step has been completed, press enter to continue to the next step.\nPlease press enter to begin.')
-    .then(() => setup.displayUserPrompt('go to the url http://www.oracle.com/technetwork/java/javase/downloads'))
-    .then(() => setup.displayUserPrompt('click on the jdk download link to be redirected to the download page for all systems.'))
-    .then(() => setup.displayUserPrompt('accept the license agreement, then download the version matching your operating system.' +
-      '\nFor most Apple OSX configurations, this auto configures your path, so you can ignore the subsequent steps.'))
-    .then(() => {
-      if (windows) {
-        return setup.displayUserPrompt('accept the default path and tools for your new java installation.');
-      }
-    })
-    .then(() => setup.displayUserPrompt('after the download, you will need to first unzip this folder,\nthen add this location to your system path.'))
-    .then(() => {
-      let displayPrompt = (windows) ? 'type "environment variables" into your start button menu or search bar and click enter.' : 'press ctrl + alt + t to launch a terminal';
-      return setup.displayUserPrompt(displayPrompt);
-    })
-    .then(() => {
-      let displayPrompt = (windows) ? 'click on the "environment variables" button near the bottom.' : 'type nano (or your text editor of choice) ~/.bash_profile';
-      return setup.displayUserPrompt(displayPrompt);
-    })
-    .then(() => {
-      let displayPrompt = (windows) ? 'in the lower window marked "system variables" you should see a variable marked "Path".\nClick on this value to modify it.' :
-        'Scroll to the end of the file. If java has not been added to your environment, you can add it with the followind:\nJAVA_HOME=/usr/lib/jvm/{your java version here}\nexport JAVA_HOME\nSave the file and exit. ' +
-        'reload the system path by pressing . /etc/environment or close the terminal.';
-      return setup.displayUserPrompt(displayPrompt);
-    })
-    .then(() => {
-      if (windows) {
-        return setup.displayUserPrompt('click on the button labeled "New", or double click on "Path"');
-      }
-    })
-    .then(() => {
-      if (windows) {
-        return setup.displayUserPrompt('paste the path to your java sdk in this box. typically, this path is of ' +
-          'the form\nC:\\Program Files\\Java\\jdk1.8.0_141\\bin, but this is unique to each installation.');
-      }
-    })
-    .then(() => {
-      if (windows) {
-        return setup.displayUserPrompt('Next, you will need to add a System Variable for "JAVA_HOME".\nClick new under the box for system variables.\nA box should pop up with values ' +
-          'for the variable name and the value. Enter "JAVA_HOME" as the name.\nFor the value, Enter "C:\\Program Files\\Java\\jdk1.8.0_141", but this is unique to each installation.');
-      }
-    })
-    .then(() => {
-      return setup.displayUserPrompt('open a new terminal then type "javac -version".\nIf this was done correctly, you should see output like "javac 1.8.0_141".');
-    })
-    .then(() => {
-      return setup.displayUserPrompt('This concludes the java jdk setup.');
-    })
+  return displayJavaPrompts(arrayOfPrompts)
+    .then(() => findPathToJdk())
+    .then(jdkPath => addJdkToSystemPath(jdkPath))
     .catch(error => {
       console.log('java jdk setup failed with the following message:\n' + error);
     });
 };
 
-let installJava = () => {
+let getJavaVersion = (javaCompilerVersion) => {
+  return javaCompilerVersion.trim()
+    .split(javaCompilerVersionSplitter)
+    .filter((element, index, array) => !isNaN(parseInt(element, 10)) && (index > 1 || array.length < 5))
+    .join('.');
+};
+
+let installJava = (customJavaVersionRange) => {
   let javaOutputFormatting = {
     resolve: formatOutput.resolve,
     stderr: (resolve, reject, data) => { // by default the output is directed to stderr
       resolve(data);
     }
   };
-  let checkJavaCompilerVersion = setup.getSystemCommand('javac -version'); // important to test the java compiler
-
+  let requiredJavaVersion = customJavaVersionRange || globalJavaVersionRange;
+  let parsedRange = semver.validRange(requiredJavaVersion);
+  if (!parsedRange) {
+    return setup.endProcessWithMessage('incorrect format for java version range', 0, 0);
+  }
   console.log('checking java version compatibility.');
-  return setup.executeSystemCommand(checkJavaCompilerVersion, javaOutputFormatting)
-    .catch(() => { //java commands are redirected to stderr in both windows and linux environments
-      console.log('no jdk version found in this computers System Path.');
-      return walkThroughjdkInstall();
-    })
-    .then(javaVersion => {
-      if (javaVersion) {
-        let version = javaVersion.match(versionPattern);
-        if (version && !semver.outside(version[0], requiredJavaVersion, '<')) {
-          console.log('java version ' + version[0] + ' is up to date');
-          return;
-        }
-        console.log('no compatible jdk version found on this computer');
-        return walkThroughjdkInstall();
+  return setup.executeSystemCommand(setup.getSystemCommand('javac -version'), javaOutputFormatting) // important to test the java compiler not JRE
+    .catch(() => 'javac 0.0.0')
+    .then(javaCompilerVersion => {
+      let formattedVersion = getJavaVersion(javaCompilerVersion);
+      let version = formattedVersion.match(versionPattern);
+      if (!semver.outside(version[0], requiredJavaVersion, '<')) {
+        console.log('java version ' + version[0] + ' is up to date');
+        return Promise.resolve();
       }
+      console.log('no compatible jdk version found on this computer');
+      return walkThroughjdkInstall();
     })
     .catch(error => {
       console.log('Jdk installation failed with the following message:\n' + error);

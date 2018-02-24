@@ -4,6 +4,8 @@
 const setup = require('webdev-setup-tools');
 const os = require('os');
 const fs = require('fs');
+const path = require('path');
+
 const operatingSystem = os.platform().trim();
 const windows = (operatingSystem === 'win32');
 const formatOutput = setup.getOutputOptions();
@@ -57,8 +59,8 @@ let installMavenOnHost = (mavenDownload) => {
   let downloadFolder = (windows) ?  'C:\\Program Files\\' : '/usr/local/';
 
 
-  let folderSeparator = (windows) ? '\\' : '/';
-  let downloadPath = homeDirectory + folderSeparator + 'Downloads' + folderSeparator + fileName;
+  let downloadPath = path.join(homeDirectory, 'Downloads', fileName);
+  // let downloadPath = homeDirectory + folderSeparator + 'Downloads' + folderSeparator + fileName;
   let mavenVersion = mavenDownload.version;
   console.log('downloading maven version from the following link:\n' + remotePath);
   return setup.downloadPackage(remotePath, downloadPath)

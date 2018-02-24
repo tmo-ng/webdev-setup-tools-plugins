@@ -1,19 +1,25 @@
 // this file intended to parse the package.json file for missing dependencies
 const semver = require('semver');
 const os = require('os');
-const globals = require('../../../package.json') || {};
-const webdevSetupTools = globals['web-dev-setup-tools'] || {};
 const {exec} = require('child_process');
 const request = require('request');
 const fs = require('fs');
 const readline = require('readline');
+const path = require('path');
 
 const operatingSystem = os.platform().trim(); // supported values are darwin (osx), linux (ubuntu), and win32 ()
 const windows = (operatingSystem === 'win32');
 const homeDirectory = os.homedir();
-const folderSeparator = (windows) ? '\\' : '/';
-
 const scriptsDirectory = __dirname;
+
+if (!fs.existsSync('../../../setup.json') && !fs.existsSync('../../../package.json')) {
+  console.log('could not find a json configuration file');
+  process.exit(0);
+}
+
+const globals = (fs.existsSync('../../../setup.json')) ?  require('../../../setup.json') : require('../../../package.json');
+const webdevSetupTools = globals['web-dev-setup-tools'] || {};
+
 const formattedOutputOptions = {
   resolve: (resolve, data) => {
     resolve(data);
@@ -45,8 +51,8 @@ let sourceBashProfileFromBashrc = () => {
 // fileToUpdate - name of dotfile script in home directory that will be updated e.g. .bash_profile
 // fileToSource - name of the startup script that will be sourced in e.g. .profile
 let sourceStartupScipt = (fileToSource, fileToUpdate) => {
-  let updateFilePath = homeDirectory + folderSeparator + fileToUpdate;
-  let sourceFilePath = homeDirectory + folderSeparator + fileToSource;
+  let updateFilePath = path.join(homeDirectory, fileToUpdate);
+  let sourceFilePath = path.join(homeDirectory, fileToSource);
   if (windows || !fs.existsSync(updateFilePath) || !fs.existsSync(sourceFilePath)) {
     return;
   }
@@ -274,7 +280,10 @@ let displayUserPrompt = displayPrompt => new Promise((resolve) => {
 });
 
 // refresh the path before running every command in powershell to handle full install
-let convertToPowershellCommand = systemCommand => 'powershell.exe -command \"$env:Path = ' + getSystemEnvironmentVariableForWindows('Path') + '; ' + systemCommand + ';\"';
+let convertToPowershellCommand = systemCommand => {
+  return 'powershell.exe -command \"$env:Path = ' + getSystemEnvVarForWindows('Path') + ' + \';\' + ' + getUserEnvVarForWindows('Path') + '; ' + systemCommand + ';\"';
+};
+
 let convertToBashLoginCommand = systemCommand => 'bash -l -c \"' + systemCommand + '\"';
 
 let getSystemCmd = systemCommand => (windows) ? convertToPowershellCommand(systemCommand) : convertToBashLoginCommand(systemCommand);
@@ -284,7 +293,10 @@ let goUpDirectories = numberOfDirectories => {
   return scriptsDirectory.split(splitValue).slice(0, -numberOfDirectories).join(splitValue) + splitValue;
 };
 
-let getSystemEnvironmentVariableForWindows = variableName => '[Environment]::GetEnvironmentVariable(\'' + variableName + '\', \'Machine\')';
+let getSystemEnvVarForWindows = variableName => '[Environment]::GetEnvironmentVariable(\'' + variableName + '\', \'Machine\')';
+
+let getUserEnvVarForWindows = variableName => '[Environment]::GetEnvironmentVariable(\'' + variableName + '\', \'User\')';
+
 let setSystemEnvironmentVariable = (variableName, variableValue) => '[Environment]::SetEnvironmentVariable(\'' + variableName + '\', ' + variableValue + ', \'Machine\')';
 
 let endProcessWithMessage = (message, delay, exitCode) => {
@@ -387,10 +399,10 @@ let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
   }
   let lineSeparator = os.EOL;
 
-  let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
+  let setuprcPath = path.join(fs.realpathSync('../'), '.setuprc');
   let existingSetupRc = fs.existsSync(setuprcPath);
   if (shouldModifyGitIgnore(isAGitRepo, '../.gitignore', '.setuprc')) {
-    let gitIgnorePath = fs.realpathSync('../') + folderSeparator + '.gitignore';
+    let gitIgnorePath = path.join(fs.realpathSync('../'), '.gitignore');
     fs.appendFileSync(gitIgnorePath, '.setuprc' + lineSeparator);
   }
   let userConfigVariables = [];
@@ -436,10 +448,10 @@ let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
   }
   let lineSeparator = os.EOL;
 
-  let setuprcPath = fs.realpathSync('../') + folderSeparator + '.setuprc';
+  let setuprcPath = path.join(fs.realpathSync('../'), '.setuprc');
   let existingSetupRc = fs.existsSync(setuprcPath);
   if (shouldModifyGitIgnore(isAGitRepo, '../.gitignore', '.setuprc')) {
-    let gitIgnorePath = fs.realpathSync('../') + folderSeparator + '.gitignore';
+    let gitIgnorePath = path.join(fs.realpathSync('../'), '.gitignore');
     fs.appendFileSync(gitIgnorePath, '.setuprc' + lineSeparator);
   }
   let userVariables = {};
@@ -478,13 +490,14 @@ module.exports = {
   convertToBashLoginCommand: convertToBashLoginCommand,
   convertToPowershellCommand: convertToPowershellCommand,
   displayUserPrompt: displayUserPrompt,
-  getWindowsEnvironmentVariable: getSystemEnvironmentVariableForWindows,
+  getWindowsEnvironmentVariable: getSystemEnvVarForWindows,
   setWindowsEnvironmentVariable: setSystemEnvironmentVariable,
   getOutputOptions: getOutputOptions,
   getProjectGlobals: getProjectGlobals,
   getInstallationCommand: getInstallationCommand,
   listOptionals: listOptionals,
   goUpDirectories: goUpDirectories,
+  getVariablesFromFile: getVariablesFromFile,
   endProcessWithMessage: endProcessWithMessage,
   getConfigVariables: getConfigVariables,
   getVariablesWithPrompt: getVariablesWithPrompt,

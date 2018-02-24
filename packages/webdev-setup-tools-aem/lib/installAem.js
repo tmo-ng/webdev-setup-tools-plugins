@@ -5,6 +5,7 @@ const setup = require('webdev-setup-tools');
 const fs = require('fs');
 const request = require('request');
 const os = require('os');
+const path = require('path');
 
 const operatingSystem = os.platform().trim();
 const formatOutput = setup.getOutputOptions();
@@ -19,24 +20,21 @@ const seconds = 1000;
 const minutes = 60 * seconds;
 const max_wait = 4 * minutes; // maximum time to wait for quickstart server startup
 const windows = (operatingSystem === 'win32');
-const folderSeparator = (windows) ? '\\' : '/';
 const commandSeparator = (windows) ? '; ' : ' && ';
-let crx_endpoint = aemGlobals.crx_endpoint;
+const crx_endpoint = aemGlobals.crx_endpoint;
+const requiredVars = new Set(['mvn_config_dir', 'download_path_dir', 'aem_install_dir']);
 
-// variables to be read from user input
-let aem_install_dir = '';
-let download_path_dir = '';
-let mvn_config_dir = '';
+// requiredPromptObj - and array of objects with of the form {display: 'please enter the path to your aem installation: ', var_name: 'aem_install_dir'},
+let installAemDependencies = (requiredPromptObj) => {
+  if (!Array.isArray(requiredPromptObj)) {
+    throw new Error('AEM requires array of configuration prompts');
+  } else if (requiredPromptObj.some(promptObj => typeof promptObj !== 'object' || !promptObj.hasOwnProperty('display') || !promptObj.hasOwnProperty('var_name'))) {
+    throw new Error('configuration prompts missing required properties for AEM installation procedure');
+  } else if (requiredVars.size !== requiredPromptObj.reduce((allVars, nextPromptObj) => (requiredVars.has(nextPromptObj.var_name)) ? allVars.add(nextPromptObj.var_name) : allVars, new Set()).size) {
+    throw new Error('Custom prompts are missing some required variables for aem installation');
+  }
 
-
-let aem_dir = '';
-let aem_folder_path = '';
-let download_path = '';
-let mvn_config_path = '';
-
-// customPrompts - and array of objects with of the form {display: 'please enter the path to your aem installation: ', var_name: 'aem_install_dir'},
-let installAemDependencies = (customPrompts) => {
-  return setup.getConfigVariablesCustomPrompt(customPrompts, folderPath => {
+  return setup.getConfigVariablesCustomPrompt(requiredPromptObj, folderPath => {
     let validFolder = fs.existsSync(folderPath);
     if (!validFolder) {
       console.log('the folder ' + folderPath + ' could not be found.');
@@ -44,40 +42,39 @@ let installAemDependencies = (customPrompts) => {
     return validFolder;
   })
     .then(userVars => {
-      mvn_config_dir = userVars.mvn_config_dir;
-      download_path_dir = userVars.download_path_dir;
-      aem_install_dir = userVars.aem_install_dir;
-      formatAemVariables();
-
-      if (isAemConfigValid()) {
-        if (fs.existsSync(aem_folder_path)) {
-          return overwriteExistingAEM();
-        } else {
-          return aemInstallationProcedure();
-        }
+      let aemRoot = userVars.aem_install_dir;
+      let downloadRoot = userVars.download_path_dir;
+      let mvnRoot = userVars.mvn_config_dir;
+      // let aem_folder_path = (aemRoot.endsWith(folderSeparator)) ? aemRoot + 'AEM' + folderSeparator : aemRoot + folderSeparator + 'AEM' + folderSeparator;
+      // let download_path = (downloadRoot.endsWith(folderSeparator)) ? downloadRoot : downloadRoot + folderSeparator;
+      // let mvn_config_path = (mvnRoot.endsWith(folderSeparator)) ? mvnRoot : mvnRoot + folderSeparator;
+      let aem_folder_path = path.join(aemRoot, 'AEM');
+      let download_path = downloadRoot;
+      let mvn_config_path = mvnRoot;
+      let userAemConfig = {aem_folder_path: aem_folder_path, download_path: download_path, mvn_config_path: mvn_config_path};
+      // [aemRoot, download_path, mvn_config_path + 'pom.xml']
+      if (isAemConfigValid([aemRoot, download_path, path.join(mvn_config_path, 'pom.xml')])) {
+        return Promise.resolve(fs.existsSync(aem_folder_path) ? overwriteExistingAEM(userAemConfig) : aemInstallationProcedure(userAemConfig));
       } else {
         console.log('Aem installation is not possible with your current configuration.\n' +
           'Check your directories are named properly and for an existing AEM installation');
+        process.exit(0);
       }
     });
 };
-
-function overwriteExistingAEM() {
+let isAemConfigValid = (userAemConfig) => { // verify all user specified folders exist
+  return userAemConfig.reduce(function (total, nextPath) {
+    return total && fs.existsSync(nextPath);
+  }, true);
+};
+function overwriteExistingAEM(userAemConfig) {
   return setup.confirmOptionalInstallation('Found existing AEM installation, would you like to overwrite this(y/n)? ', () => {
-    let deleteDirectory = (windows) ? 'rd /s /q \"' + aem_folder_path + '\"' : 'rm -rf ' + aem_folder_path;
+    let deleteDirectory = (windows) ? 'rd /s /q \"' + userAemConfig.aem_folder_path + '\"' : 'rm -rf ' + userAemConfig.aem_folder_path;
     return setup.executeSystemCommand(deleteDirectory, formatOutput)
-      .then(() => aemInstallationProcedure())
+      .then(() => aemInstallationProcedure(userAemConfig))
   });
 }
-let formatAemVariables = () => {
-  aem_dir = (aem_install_dir.endsWith(folderSeparator)) ? 'AEM' + folderSeparator : folderSeparator + 'AEM' + folderSeparator;
-  aem_folder_path = aem_install_dir + aem_dir;
-  download_path = (download_path_dir.endsWith(folderSeparator)) ? download_path_dir : download_path_dir + folderSeparator;
-  mvn_config_path = (mvn_config_dir.endsWith(folderSeparator)) ? mvn_config_dir : mvn_config_dir + folderSeparator;
-};
-let isAemConfigValid = () => {
-  return fs.existsSync(mvn_config_dir + folderSeparator  + 'pom.xml') && fs.existsSync(aem_install_dir) && fs.existsSync(download_path_dir);
-};
+
 let waitForServerStartup = () => {
   console.log('waiting for server to startup...');
   let portListenCommand = (windows) ? findPortProcessWindows : findPortProcessOsxLinux;
@@ -107,13 +104,13 @@ let waitForServerStartup = () => {
   });
 };
 
-let uploadAndInstallAllAemPackages = () => {
+let uploadAndInstallAllAemPackages = (userAemConfig) => {
   console.log('server started, installing local packages now...');
   let packageArray = Object.keys(content_files);
   return packageArray.reduce((promise, zipFile) => promise.then(() => new Promise((resolve) => {
     let waitForUploadSuccess = () => {
       let formData = {
-        file: fs.createReadStream(download_path + zipFile),
+        file: fs.createReadStream(path.join(userAemConfig.download_path, zipFile)),
         name: zipFile,
         force: 'true',
         install: 'true'
@@ -134,12 +131,12 @@ let uploadAndInstallAllAemPackages = () => {
     waitForUploadSuccess();
   })), Promise.resolve());
 };
-let mavenCleanAndAutoInstall = () => {
-  let outFile = aem_folder_path + 'mvnOutput.log';
+let mavenCleanAndAutoInstall = (userAemConfig) => {
+  let outFile = path.join(userAemConfig.aem_folder_path, 'mvnOutput.log');
 
   //need to check whether JAVA_HOME has been set here for windows machines, if not, this can be executed with the command below
   let loadJavaHome = (windows) ? '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME') + commandSeparator : '';
-  let mvnCleanInstallCmd = 'cd ' + mvn_config_path + commandSeparator + 'mvn clean install';
+  let mvnCleanInstallCmd = 'cd ' + userAemConfig.mvn_config_path + commandSeparator + 'mvn clean install';
   let mvnOptions = '';
   mvn_install_options.forEach(option => {
     mvnOptions += ' ' + option;
@@ -148,9 +145,9 @@ let mavenCleanAndAutoInstall = () => {
   console.log('running mvn clean and auto package install.\nOutput is being sent to the file ' + outFile);
   return setup.executeSystemCommand(setup.getSystemCommand(fullMvnInstallCmd), {resolve: formatOutput.resolve});
 };
-let copyNodeFile = () => {
-  let nodeFolderPath = mvn_config_path + 'node';
-  let nodePath = nodeFolderPath + folderSeparator + 'node.exe';
+let copyNodeFile = (userAemConfig) => {
+  let nodeFolderPath = path.join(userAemConfig.mvn_config_path, 'node');
+  let nodePath = path.join(nodeFolderPath, 'node.exe');
 
   if (!fs.existsSync(nodePath)) {
     if (!fs.existsSync(nodeFolderPath)) {
@@ -159,15 +156,15 @@ let copyNodeFile = () => {
     }
     console.log('copying node file into ' + nodePath);
     let copyNodeFile = (windows) ? 'copy ' : 'cp ';
-    copyNodeFile += '\"' + process.execPath + '\" ' + nodeFolderPath + folderSeparator;
+    copyNodeFile += '\"' + process.execPath + '\" ' + nodeFolderPath;
     return setup.executeSystemCommand(copyNodeFile, formatOutput);
   } else {
     return Promise.resolve();
   }
 };
-let startAemServer = (jarName) =>{
-  console.log('starting jar file AEM folder.');
-  let startServer = 'cd ' + aem_folder_path + commandSeparator;
+let startAemServer = (jarName, userAemConfig) =>{
+  console.log('starting AEM server...');
+  let startServer = 'cd ' + userAemConfig.aem_folder_path + commandSeparator;
   startServer += (windows) ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName;
   options.forEach(option => {
     startServer += (windows) ? ', \'' + option + '\'' : ' ' + option;
@@ -175,10 +172,10 @@ let startAemServer = (jarName) =>{
   startServer += (windows) ? '' : ' &';
   setup.executeSystemCommand(setup.getSystemCommand(startServer), {resolve: formatOutput.resolve});
 };
-let downloadAllAemFiles = () => {
+let downloadAllAemFiles = (userAemConfig) => {
   let contentFilenames = Object.keys(content_files);
   let missingFiles = contentFilenames.reduce((fileMap, fileName) => {
-    if (!fs.existsSync(download_path + fileName)) {
+    if (!fs.existsSync(path.join(userAemConfig.download_path, fileName))) {
       fileMap[fileName] = content_files[fileName];
     }
     return fileMap;
@@ -202,7 +199,7 @@ let downloadAllAemFiles = () => {
     .then(files => {
       return setup.runListOfPromises(files, (dependency, globalPackage) => {
         console.log('downloading aem dependency ' + dependency);
-        return setup.downloadPackage(globalPackage[dependency], download_path + dependency);
+        return setup.downloadPackage(globalPackage[dependency], path.join(userAemConfig.download_path, dependency));
       });
     });
 
@@ -224,25 +221,25 @@ let stopAemProcess = () => {
       process.exit(0);
     });
 };
-let aemInstallationProcedure = () => {
+let aemInstallationProcedure = (userAemConfig) => {
   let downloadFile = (dependency, globalPackage) => {
-    return setup.downloadPackage(globalPackage[dependency], aem_folder_path + dependency)
+    return setup.downloadPackage(globalPackage[dependency], path.join(userAemConfig.aem_folder_path, dependency))
       .then(() => dependency);
   };
   let authorFile = Object.keys(aemGlobals.author)[0];
-  console.log('creating AEM directory at ' + aem_folder_path);
-  return setup.executeSystemCommand('mkdir ' + aem_folder_path, formatOutput)
-    .then(() => copyNodeFile())
+  console.log('creating AEM directory at ' + userAemConfig.aem_folder_path);
+  return setup.executeSystemCommand('mkdir ' + userAemConfig.aem_folder_path, formatOutput)
+    .then(() => copyNodeFile(userAemConfig))
     .then(() => {
       console.log('downloading author and license files into AEM folder.');
       let authorAndLicense = Object.assign({}, aemGlobals.author, aemGlobals.license);
       return setup.runListOfPromises(authorAndLicense, downloadFile);
     })
-    .then(() => startAemServer(authorFile))
-    .then(() => downloadAllAemFiles())
+    .then(() => startAemServer(authorFile, userAemConfig))
+    .then(() => downloadAllAemFiles(userAemConfig))
     .then(() => waitForServerStartup())
-    .then(() => uploadAndInstallAllAemPackages())
-    .then(() => mavenCleanAndAutoInstall())
+    .then(() => uploadAndInstallAllAemPackages(userAemConfig))
+    .then(() => mavenCleanAndAutoInstall(userAemConfig))
     .then(() => stopAemProcess())
     .then(() => {
       console.log('\nsuccessfully installed aem packages.\n');
