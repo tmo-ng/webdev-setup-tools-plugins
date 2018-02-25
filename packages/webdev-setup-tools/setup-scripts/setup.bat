@@ -49,6 +49,11 @@ for /f "tokens=*" %%i in ('powershell -command "& { . .\nodeInstallerScript.ps1;
     set latestNodeVersion=%%i
 )
 
+if !latestNodeVersion! == False (
+    set /p missingPrompt=Failed to find the latest version of node. Please verify you have set the default internet explorer settings.
+    exit /b 0
+)
+
 if !userNodeVersion! == "" (
     call :InstallNode
     exit /b 0

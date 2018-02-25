@@ -12,13 +12,21 @@ const windows = (operatingSystem === 'win32');
 const homeDirectory = os.homedir();
 const scriptsDirectory = __dirname;
 
-if (!fs.existsSync('../../../setup.json') && !fs.existsSync('../../../package.json')) {
+if (!fs.existsSync('../setup.json') && !fs.existsSync('../package.json')) {
   console.log('could not find a json configuration file');
-  process.exit(0);
+  process.exit(1);
 }
 
-const globals = (fs.existsSync('../../../setup.json')) ?  require('../../../setup.json') : require('../../../package.json');
-const webdevSetupTools = globals['web-dev-setup-tools'] || {};
+const globals = (() => {
+  try {
+    return (fs.existsSync('../setup.json')) ?  JSON.parse(fs.readFileSync('../setup.json', 'utf8')) : JSON.parse(fs.readFileSync('../package.json', 'utf8'));
+  } catch(err) {
+    console.log('failed to identify global configuration with the following error:\n' + err);
+    process.exit(1);
+  }
+})();
+
+const webdevSetupTools = globals['web-dev-setup-tools'] || globals;
 
 const formattedOutputOptions = {
   resolve: (resolve, data) => {
@@ -32,6 +40,9 @@ const formattedOutputOptions = {
 let getOutputOptions = () => formattedOutputOptions;
 
 let getProjectGlobals = (packageName) => {
+  if (!webdevSetupTools.hasOwnProperty(packageName)) {
+    throw new Error('no configuration found for ' + packageName);
+  }
   return webdevSetupTools[packageName];
 };
 
@@ -170,14 +181,30 @@ let findHighestCompatibleVersion = (globalPackage, projectGlobals, listVersionsC
 };
 
 let confirmOptionalInstallation = (displayPrompt, acceptCallback, denyCallback) => {
-  return displayUserPrompt(displayPrompt)
-    .then(response => {
-      if (!response.startsWith('n')) {
-        return acceptCallback();
-      } else if (denyCallback) {
-        return denyCallback();
+
+  let acceptResponses = new Set(['y', 'yes']);
+  let denyResponses = new Set(['n', 'no']);
+  return new Promise((resolve, reject) => {
+    (function ignoreInvalidKeys() {
+      return displayUserPrompt(displayPrompt)
+        .then(response => {
+          if (acceptResponses.has(response.toLowerCase())) {
+            resolve(acceptCallback);
+          } else if (denyResponses.has(response.toLowerCase())) {
+            resolve(denyCallback);
+          } else {
+            ignoreInvalidKeys();
+          }
+        });
+    })();
+  })
+    .then(function (callback) {
+      if (!callback) {
+        return Promise.resolve();
       }
+      return callback();
     });
+
 };
 
 let getAllUserGlobals = (installedModules, modulePattern) => { // return a map of all modules user has installed

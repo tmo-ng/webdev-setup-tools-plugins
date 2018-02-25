@@ -10,10 +10,8 @@ const path = require('path');
 const homeDirectory = os.homedir();
 const operatingSystem = os.platform().trim();
 const windows = (operatingSystem === 'win32');
-const folderSeparator = (windows) ? '\\' : '/';
 const formatOutput = setup.getOutputOptions();
 const versionPattern = /([0-9]+(?:\.[0-9]+)+)/g;
-const javaCompilerVersionSplitter = /[^\d]+/;
 const globalJavaVersionRange = setup.getProjectGlobals('java');
 let jdkDownloadMatcher = (windows) ? /jdk-.*windows-x64.*exe/ : /jdk-.*linux-x64.*tar.gz/;
 
@@ -36,7 +34,7 @@ const arrayOfPrompts = [ // hold all hardcoded string values for the steps in jd
   {
     darwin: 'Click on the downloaded file to run the installer. For most MacOs configurations, this automatically adds the jdk to your environment.',
     linux: 'Click on the downloaded tar.gz to extract it, or run the command "tar -xf /path/to/download -C /desired/install/directory" in a terminal',
-    win32: 'Click on downloaded windows-x64.exe to start the jdk installer'
+    win32: 'Click on downloaded windows-x64.exe to start the jdk installer.'
   },
   {
     linux: 'Once you have successfully extracted the tar.gz, press enter to add the jdk to your path',
@@ -53,50 +51,6 @@ let displayJavaPrompts = (javaPrompts) => {
   })), Promise.resolve());
 };
 
-let confirmFileToInstall = (arrayOfFiles) => {
-  if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
-    return Promise.resolve();
-  }
-
-  return arrayOfFiles.reduce((promise, fileName) => promise.then((jdkInstallerObject) => new Promise((resolve) => {
-    (function promptForValue() {
-      if (jdkInstallerObject.hasOwnProperty('jdk_installer_file')) {
-        return resolve(jdkInstallerObject);
-      }
-      let promptForUser = 'found the file ' + fileName + '. Is this the file you would like installed(y/n)? ';
-      return setup.confirmOptionalInstallation(promptForUser, () => resolve({jdk_installer_file: fileName}), () => resolve(jdkInstallerObject));
-    })();
-  })), Promise.resolve({}));
-};
-
-
-let findJavaDownload = (javaVersion) => {
-  if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
-    return Promise.resolve();
-  }
-  let versions = fs.readdirSync(homeDirectory + folderSeparator + 'Downloads')
-    .filter(file => jdkDownloadMatcher.test(file));
-
-  return Promise.resolve(versions);
-};
-
-let watchDownloadsFolder = (javaVersion) => {
-  return new Promise((resolve, reject) => {
-    fs.watch(homeDirectory + folderSeparator + 'Downloads', (eventType, filename) => {
-      console.log(`event type is: ${eventType}`);
-      if (filename) {
-        if (jdkDownloadMatcher.test(filename)) {
-
-          resolve(homeDirectory + folderSeparator + 'Downloads' + folderSeparator + filename);
-        }
-        console.log(`filename provided: ${filename}`);
-      } else {
-        resolve();
-        console.log('filename not provided');
-      }
-    });
-  });
-};
 let addJdkToSystemPath = (jdkPath) => {
   if (operatingSystem === 'darwin') { // mac automatically configures environment to use the jdk
     return Promise.resolve();
@@ -166,7 +120,11 @@ let walkThroughjdkInstall = () => {
     });
 };
 
+// handle inconsistent version patterns from java compiler and convert to a standard semantic version format
+// example: javac 1.8.0_151 => 8.0.151, javac 9.0.4 => 9.0.4
 let getJavaVersion = (javaCompilerVersion) => {
+  const javaCompilerVersionSplitter = /[^\d]+/;
+
   return javaCompilerVersion.trim()
     .split(javaCompilerVersionSplitter)
     .filter((element, index, array) => !isNaN(parseInt(element, 10)) && (index > 1 || array.length < 5))
@@ -180,8 +138,8 @@ let installJava = (customJavaVersionRange) => {
       resolve(data);
     }
   };
-  let requiredJavaVersion = customJavaVersionRange || globalJavaVersionRange;
-  let parsedRange = semver.validRange(requiredJavaVersion);
+
+  let parsedRange = semver.validRange(customJavaVersionRange || globalJavaVersionRange);
   if (!parsedRange) {
     return setup.endProcessWithMessage('incorrect format for java version range', 0, 0);
   }
@@ -191,7 +149,7 @@ let installJava = (customJavaVersionRange) => {
     .then(javaCompilerVersion => {
       let formattedVersion = getJavaVersion(javaCompilerVersion);
       let version = formattedVersion.match(versionPattern);
-      if (version && !semver.outside(version[0], requiredJavaVersion, '<')) {
+      if (version && !semver.outside(version[0], parsedRange, '<')) {
         console.log('java version ' + version[0] + ' is up to date');
         return Promise.resolve();
       }

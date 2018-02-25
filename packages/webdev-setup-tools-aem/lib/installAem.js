@@ -45,61 +45,61 @@ let installAemDependencies = (requiredPromptObj) => {
       let aemRoot = userVars.aem_install_dir;
       let downloadRoot = userVars.download_path_dir;
       let mvnRoot = userVars.mvn_config_dir;
-      // let aem_folder_path = (aemRoot.endsWith(folderSeparator)) ? aemRoot + 'AEM' + folderSeparator : aemRoot + folderSeparator + 'AEM' + folderSeparator;
-      // let download_path = (downloadRoot.endsWith(folderSeparator)) ? downloadRoot : downloadRoot + folderSeparator;
-      // let mvn_config_path = (mvnRoot.endsWith(folderSeparator)) ? mvnRoot : mvnRoot + folderSeparator;
+
       let aem_folder_path = path.join(aemRoot, 'AEM');
       let download_path = downloadRoot;
       let mvn_config_path = mvnRoot;
       let userAemConfig = {aem_folder_path: aem_folder_path, download_path: download_path, mvn_config_path: mvn_config_path};
-      // [aemRoot, download_path, mvn_config_path + 'pom.xml']
       if (isAemConfigValid([aemRoot, download_path, path.join(mvn_config_path, 'pom.xml')])) {
         return Promise.resolve(fs.existsSync(aem_folder_path) ? overwriteExistingAEM(userAemConfig) : aemInstallationProcedure(userAemConfig));
       } else {
         console.log('Aem installation is not possible with your current configuration.\n' +
           'Check your directories are named properly and for an existing AEM installation');
-        process.exit(0);
+        process.exit(1);
       }
     });
 };
 let isAemConfigValid = (userAemConfig) => { // verify all user specified folders exist
-  return userAemConfig.reduce(function (total, nextPath) {
-    return total && fs.existsSync(nextPath);
-  }, true);
+  return userAemConfig.reduce((total, nextPath) => total && fs.existsSync(nextPath), true);
 };
 function overwriteExistingAEM(userAemConfig) {
   return setup.confirmOptionalInstallation('Found existing AEM installation, would you like to overwrite this(y/n)? ', () => {
     let deleteDirectory = (windows) ? 'rd /s /q \"' + userAemConfig.aem_folder_path + '\"' : 'rm -rf ' + userAemConfig.aem_folder_path;
     return setup.executeSystemCommand(deleteDirectory, formatOutput)
       .then(() => aemInstallationProcedure(userAemConfig))
+      .catch(() => {
+        console.log('failed to remove existing AEM installation.');
+        console.log('please shut down any background AEM processes and run this script again');
+        process.exit(1);
+      });
   });
 }
 
-let waitForServerStartup = () => {
+let waitForServerStartup = (userAemConfig) => {
   console.log('waiting for server to startup...');
-  let portListenCommand = (windows) ? findPortProcessWindows : findPortProcessOsxLinux;
-  return new Promise((resolve) => {
-    (function waitForEstablishedConnection(wait_time) {
-      return setup.executeSystemCommand(portListenCommand, {resolve: formatOutput.resolve})
-        .then(osResponse => {
-          if (osResponse.includes('ESTABLISHED') || wait_time > max_wait) {
-            console.log(osResponse);
-            resolve(osResponse);
-          } else {
-            console.log('server is listening, waiting for connection to be established');
-            let delay = 3 * seconds;
-            setTimeout(() => {
-              waitForEstablishedConnection(wait_time + delay);
-            }, delay);
-          }
-        })
-        .catch(() => {
-          console.log('did not find any process at port ' + port + ', checking again.');
-          let delay = 5 * seconds;
+
+  let logFilePath = path.join(userAemConfig.aem_folder_path, 'crx-quickstart', 'logs', 'stderr.log');
+
+  return new Promise((resolve, reject) => {
+    (function waitForStartup(wait_time) {
+      fs.readFile(logFilePath, 'utf8', (err, data) => {
+        if (err) {
           setTimeout(() => {
-            waitForEstablishedConnection(wait_time + delay);
-          }, delay);
-        });
+            console.log('waiting for message from aem server');
+            waitForStartup(wait_time + 3 * seconds);
+          }, 3 * seconds);
+        } else {
+          // Quickstart started
+          if (data.includes('Quickstart started') || wait_time > max_wait) {
+            console.log('aem server has started, uploading files');
+            return resolve();
+          }
+          setTimeout(() => {
+            console.log('aem server is initializing... ');
+            waitForStartup(wait_time + 3 * seconds);
+          }, 3 * seconds);
+        }
+      });
     })(0);
   });
 };
@@ -218,7 +218,7 @@ let stopAemProcess = () => {
     })
     .catch(error => {
       console.log('failed to shutdown server on port ' + port + ' with error\n' + error);
-      process.exit(0);
+      process.exit(1);
     });
 };
 let aemInstallationProcedure = (userAemConfig) => {
@@ -237,7 +237,7 @@ let aemInstallationProcedure = (userAemConfig) => {
     })
     .then(() => startAemServer(authorFile, userAemConfig))
     .then(() => downloadAllAemFiles(userAemConfig))
-    .then(() => waitForServerStartup())
+    .then(() => waitForServerStartup(userAemConfig))
     .then(() => uploadAndInstallAllAemPackages(userAemConfig))
     .then(() => mavenCleanAndAutoInstall(userAemConfig))
     .then(() => stopAemProcess())
