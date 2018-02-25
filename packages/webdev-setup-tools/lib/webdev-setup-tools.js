@@ -11,15 +11,11 @@ const operatingSystem = os.platform().trim(); // supported values are darwin (os
 const windows = (operatingSystem === 'win32');
 const homeDirectory = os.homedir();
 const scriptsDirectory = __dirname;
-
-if (!fs.existsSync('../setup.json') && !fs.existsSync('../package.json')) {
-  console.log('could not find a json configuration file');
-  process.exit(1);
-}
+const root = (process.cwd().endsWith('setup-scripts')) ? '../' : './';
 
 const globals = (() => {
   try {
-    return (fs.existsSync('../setup.json')) ?  JSON.parse(fs.readFileSync('../setup.json', 'utf8')) : JSON.parse(fs.readFileSync('../package.json', 'utf8'));
+    return (fs.existsSync(root + 'setup.json')) ? JSON.parse(fs.readFileSync(root + 'setup.json', 'utf8')) : JSON.parse(fs.readFileSync(root + 'package.json', 'utf8'));
   } catch(err) {
     console.log('failed to identify global configuration with the following error:\n' + err);
     process.exit(1);
@@ -276,6 +272,16 @@ let getMaxNodeVersion = (range) => {
   let installRange = range || globalNode.node || globalNode.install;
   return getVersionWithRequest('https://nodejs.org/dist/', /href="v([0-9.]+)\/"/g, installRange).then(versionObj => 'v' + versionObj.version);
 };
+// console.log(require('semver').satisfies('$localVersion', require('../setup.json')['web-dev-setup-tools']['node']['install']))
+let isLocalNodeCompatible = (localNode) => {
+  if (typeof localNode !== 'string' || !semver.valid(localNode)) {
+    throw new Error('local node version must be a valid semantic version string');
+  }
+
+  let globalNode = webdevSetupTools.node || globals.engines;
+  let installRange = globalNode.node || globalNode.install;
+  return semver.satisfies(localNode, installRange);
+};
 
 let downloadPackage = (hyperlink, downloadPath) => {
   return new Promise((resolve, reject) => {
@@ -531,6 +537,7 @@ module.exports = {
   getConfigVariablesCustomPrompt: getConfigVariablesCustomPrompt,
   getMissingVariables: getMissingVariables,
   getMaxNodeVersion: getMaxNodeVersion,
+  isLocalNodeCompatible: isLocalNodeCompatible,
   sourceBashProfileFromBashrc: sourceBashProfileFromBashrc,
   sourceStartupScipt: sourceStartupScipt
 };

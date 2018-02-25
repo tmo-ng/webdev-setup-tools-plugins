@@ -68,7 +68,7 @@ for /f "tokens=*" %%i in ('node -e "require('webdev-setup-tools').getMaxNodeVers
 echo the newest version of node is !latestNodeVersion!
 set compatible=""
 set nodePath=""
-for /f "tokens=*" %%i in ('node -e "console.log(require('semver').satisfies('!userNodeVersion:~1!', require('./package.json')['web-dev-setup-tools']['node']['install']))"') do (
+for /f "tokens=*" %%i in ('node -e "console.log(require('webdev-setup-tools').isLocalNodeCompatible('!userNodeVersion:~1!'))"') do (
     set compatible=%%i
 )
 for /f "tokens=*" %%i in ('where node.exe') do (

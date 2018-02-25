@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 #load nvm into current environment
-#node -e "console.log(require('semver').outside($localVersion, require('../package.json').globals.engines.node, '<'))"
 function load_nvm_script () {
   #this assumes the recommended installation directory of ~/.nvm
     if [ -e "$HOME/.nvm" ]; then
@@ -62,7 +61,7 @@ function perform_optional_update () {
 }
 function local_is_compatible () {
     localVersion=$1
-    isCompatible=$(node -e "console.log(require('semver').satisfies('$localVersion', require('./package.json')['web-dev-setup-tools']['node']['install']))")
+    isCompatible=$(node -e "console.log(require('webdev-setup-tools').isLocalNodeCompatible('$1'))")
     echo "$isCompatible"
 }
 #install dependencies required by setup.js
@@ -79,7 +78,10 @@ function install_node_lts () {
     load_nvm_script
 
     #need to install to verify lts satisfies required version
-    install_package_dependencies
+    if [[ $1 != "--no-install" ]]; then
+        echo "now installing required package dependencies"
+        install_package_dependencies
+    fi
 
     if [[ $(local_is_compatible $latestVersion) == "false" ]]; then
         echo "local version of node is not compatible with this project"
@@ -114,10 +116,14 @@ function main () {
         echo "no version of node detected, installing now"
         install_nvm
         load_nvm_script
-        install_node_lts
+        install_node_lts $1
     else
-        echo "now installing required package dependencies"
-        install_package_dependencies
+        if [[ $1 != "--no-install" ]]; then
+            echo "now installing required package dependencies"
+            install_package_dependencies
+        else
+            cd ../
+        fi
         #check here for compatibility
         echo "you are currently using node version $LOCAL_VERSION"
         if [[ $(local_is_compatible $LOCAL_VERSION) == "false" ]]; then
@@ -137,4 +143,4 @@ function main () {
     echo "beginning full install"
     bash -l -c "cd ./setup-scripts && node ./setup.js"
 }
-main
+main $1
