@@ -18,7 +18,7 @@ const globalRubyObject = {ruby: rubySemanticVersion};
 const homeDirectory = os.homedir();
 
 let installRuby = () => {
-  return (windows) ? installRubyOnWindows() : installRvmOnMacOrLinux();
+  return Promise.resolve((windows) ? installRubyOnWindows() : installRvmOnMacOrLinux());
 };
 
 let installRubyOnWindowsHost = remoteRubyVersion => {
@@ -27,7 +27,7 @@ let installRubyOnWindowsHost = remoteRubyVersion => {
     path.substring(path.lastIndexOf('/') + 1, path.length);
   return setup.downloadPackage(path, rubyDownloadPath)
     .then(rubyFilePath => {
-      let startRubyInstall = rubyFilePath + ' /verysilent /tasks="modpath"';
+      let startRubyInstall = '\"' + rubyFilePath + '\" /verysilent /tasks="modpath"';
       return setup.executeSystemCommand(startRubyInstall, formatOutput);
     })
     .then(() => remoteRubyVersion.version);

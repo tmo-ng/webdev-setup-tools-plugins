@@ -64,7 +64,7 @@ let isAemConfigValid = (userAemConfig) => { // verify all user specified folders
 };
 function overwriteExistingAEM(userAemConfig) {
   return setup.confirmOptionalInstallation('Found existing AEM installation, would you like to overwrite this(y/n)? ', () => {
-    let deleteDirectory = (windows) ? 'rd /s /q \"' + userAemConfig.aem_folder_path + '\"' : 'rm -rf ' + userAemConfig.aem_folder_path;
+    let deleteDirectory = (windows) ? 'rd /s /q \"' + userAemConfig.aem_folder_path + '\"' : 'rm -rf \"' + userAemConfig.aem_folder_path + '\"';
     return setup.executeSystemCommand(deleteDirectory, formatOutput)
       .then(() => aemInstallationProcedure(userAemConfig))
       .catch(() => {
@@ -132,11 +132,11 @@ let uploadAndInstallAllAemPackages = (userAemConfig) => {
   })), Promise.resolve());
 };
 let mavenCleanAndAutoInstall = (userAemConfig) => {
-  let outFile = path.join(userAemConfig.aem_folder_path, 'mvnOutput.log');
+  let outFile = '\\"' + path.join(userAemConfig.aem_folder_path, 'mvnOutput.log') + '\\"';
 
   //need to check whether JAVA_HOME has been set here for windows machines, if not, this can be executed with the command below
   let loadJavaHome = (windows) ? '$env:JAVA_HOME = ' + setup.getWindowsEnvironmentVariable('JAVA_HOME') + commandSeparator : '';
-  let mvnCleanInstallCmd = 'cd ' + userAemConfig.mvn_config_path + commandSeparator + 'mvn clean install';
+  let mvnCleanInstallCmd = 'cd \\"' + userAemConfig.mvn_config_path + '\\"' + commandSeparator + 'mvn clean install';
   let mvnOptions = '';
   mvn_install_options.forEach(option => {
     mvnOptions += ' ' + option;
@@ -164,7 +164,7 @@ let copyNodeFile = (userAemConfig) => {
 };
 let startAemServer = (jarName, userAemConfig) =>{
   console.log('starting AEM server...');
-  let startServer = 'cd ' + userAemConfig.aem_folder_path + commandSeparator;
+  let startServer = 'cd \\"' + userAemConfig.aem_folder_path + '\\"' + commandSeparator;
   startServer += (windows) ? 'Start-Process java -ArgumentList \'-jar\', \'' + jarName + '\'' : 'java -jar ' + jarName;
   options.forEach(option => {
     startServer += (windows) ? ', \'' + option + '\'' : ' ' + option;
@@ -228,7 +228,7 @@ let aemInstallationProcedure = (userAemConfig) => {
   };
   let authorFile = Object.keys(aemGlobals.author)[0];
   console.log('creating AEM directory at ' + userAemConfig.aem_folder_path);
-  return setup.executeSystemCommand('mkdir ' + userAemConfig.aem_folder_path, formatOutput)
+  return setup.executeSystemCommand('mkdir \"' + userAemConfig.aem_folder_path + '\"', formatOutput)
     .then(() => copyNodeFile(userAemConfig))
     .then(() => {
       console.log('downloading author and license files into AEM folder.');

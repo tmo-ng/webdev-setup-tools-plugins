@@ -326,6 +326,22 @@ let goUpDirectories = numberOfDirectories => {
   return scriptsDirectory.split(splitValue).slice(0, -numberOfDirectories).join(splitValue) + splitValue;
 };
 
+let hasAdminRights = () => {
+  if (!windows) {
+    return Promise.resolve();
+  }
+  let checkAdminRights = 'powershell -c "$wid=[System.Security.Principal.WindowsIdentity]::GetCurrent();' +
+    '$prp=new-object System.Security.Principal.WindowsPrincipal($wid);$adm=[System.Security.Principal.WindowsBuiltInRole]::Administrator;' +
+    'echo $prp.IsInRole($adm)"';
+  return executeSystemCommand(checkAdminRights, {resolve: formattedOutputOptions.resolve})
+    .then(shellResponse => {
+      if (shellResponse.trim().toLowerCase() === 'false') {
+        console.log('Please rerun this command in an administrative command prompt window');
+        process.exit(0);
+      }
+    });
+};
+
 let getSystemEnvVarForWindows = variableName => '[Environment]::GetEnvironmentVariable(\'' + variableName + '\', \'Machine\')';
 
 let getUserEnvVarForWindows = variableName => '[Environment]::GetEnvironmentVariable(\'' + variableName + '\', \'User\')';
@@ -516,6 +532,7 @@ module.exports = {
   runListOfPromises: runListOfPromises,
   findRequiredAndOptionalUpdates: findRequiredAndOptionalUpdates,
   handleUnresponsiveSystem: handleUnresponsiveSystem,
+  hasAdminRights: hasAdminRights,
   executeSystemCommand: executeSystemCommand,
   confirmOptionalInstallation: confirmOptionalInstallation,
   getVersionWithRequest: getVersionWithRequest,
