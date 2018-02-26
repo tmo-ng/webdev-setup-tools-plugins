@@ -377,7 +377,8 @@ let getVariablesWithPrompt = (arrayOfConfigVariables, validateInputFunc) => {
       let promptForUser = variable['display'];
       return displayUserPrompt(promptForUser)
         .then(output => {
-          if (validateInputFunc(output)) {
+          let customValidator = variable['custom_validator'] || validateInputFunc;
+          if (customValidator(output)) {
             responseObject[variable['var_name']] = output;
             resolve(responseObject);
           } else {
