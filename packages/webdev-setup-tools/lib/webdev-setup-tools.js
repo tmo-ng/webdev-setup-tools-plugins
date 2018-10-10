@@ -11,7 +11,7 @@ const operatingSystem = os.platform().trim(); // supported values are darwin (os
 const windows = (operatingSystem === 'win32');
 const homeDirectory = os.homedir();
 const scriptsDirectory = __dirname;
-const root = (process.cwd().endsWith('setup-scripts')) ? '../' : './';
+const root = (process.cwd().endsWith('setup')) ? '../../' : './';
 
 const globals = (() => {
   try {
@@ -440,7 +440,7 @@ let shouldModifyGitIgnore = (isAGitRepo, gitIgnorePath, fileName) => {
 let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
 
   let validationFunction = (validateInputFunc) ? validateInputFunc : input => input;
-  let isAGitRepo = fs.existsSync('../.git');
+  let isAGitRepo = fs.existsSync('../../.git');
   if (!isAGitRepo) {
     let alertNonGitUser = 'It looks like you are not using a git repository.\n' +
       'It will be your responsibility to ignore the .setuprc that is created by this procedure.\n' +
@@ -449,10 +449,10 @@ let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
   }
   let lineSeparator = os.EOL;
 
-  let setuprcPath = path.join(fs.realpathSync('../'), '.setuprc');
+  let setuprcPath = path.join(fs.realpathSync('../../'), '.setuprc');
   let existingSetupRc = fs.existsSync(setuprcPath);
-  if (shouldModifyGitIgnore(isAGitRepo, '../.gitignore', '.setuprc')) {
-    let gitIgnorePath = path.join(fs.realpathSync('../'), '.gitignore');
+  if (shouldModifyGitIgnore(isAGitRepo, '../../.gitignore', '.setuprc')) {
+    let gitIgnorePath = path.join(fs.realpathSync('../../'), '.gitignore');
     fs.appendFileSync(gitIgnorePath, '.setuprc' + lineSeparator);
   }
   let userConfigVariables = [];
@@ -489,7 +489,7 @@ let getConfigVariablesCustomPrompt = (promptObjects, validateInputFunc) => {
 let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
   let userConfigVariables = requestedConfigVariables || [];
   let validationFunction = (validateInputFunc) ? validateInputFunc : input => input;
-  let isAGitRepo = fs.existsSync('../.git');
+  let isAGitRepo = fs.existsSync('../../.git');
   if (!isAGitRepo) {
     let alertNonGitUser = 'It looks like you are not using a git repository.\n' +
       'It will be your responsibility to ignore the .setuprc that is created by this procedure.\n' +
@@ -498,10 +498,10 @@ let getConfigVariables = (requestedConfigVariables, validateInputFunc) => {
   }
   let lineSeparator = os.EOL;
 
-  let setuprcPath = path.join(fs.realpathSync('../'), '.setuprc');
+  let setuprcPath = path.join(fs.realpathSync('../../'), '.setuprc');
   let existingSetupRc = fs.existsSync(setuprcPath);
-  if (shouldModifyGitIgnore(isAGitRepo, '../.gitignore', '.setuprc')) {
-    let gitIgnorePath = path.join(fs.realpathSync('../'), '.gitignore');
+  if (shouldModifyGitIgnore(isAGitRepo, '../../.gitignore', '.setuprc')) {
+    let gitIgnorePath = path.join(fs.realpathSync('../../'), '.gitignore');
     fs.appendFileSync(gitIgnorePath, '.setuprc' + lineSeparator);
   }
   let userVariables = {};

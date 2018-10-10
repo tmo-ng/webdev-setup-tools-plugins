@@ -10,7 +10,7 @@ The following configuration scripts are included in this folder:
 * nodeInstallerScript.ps1 (windows)
 * example-setup.js
 
-**setup.sh:** To run setup.sh, navigate to the node_modules/webdev-setup-tools/setup-scripts folder in a terminal window, and enter the following commands:
+**setup.sh:** To run setup.sh, navigate to the node_modules/webdev-setup-tools/setup folder in a terminal window, and enter the following commands:
   ```sh
   chmod 755 setup.sh
   ./setup.sh
@@ -18,17 +18,17 @@ The following configuration scripts are included in this folder:
 setup.sh performs the following actions:
 * installs node version manager (nvm) locally
 * installs/updates local version of node
-* runs the setup.js file in setup-scripts folder
+* runs the setup.js file in setup folder
 
 
-**setup.bat:** To run setup.bat, navigate to node_modules/webdev-setup-tools/setup-scripts folder in a command prompt with administrative priveleges, and enter the following command:
+**setup.bat:** To run setup.bat, navigate to node_modules/webdev-setup-tools/setup folder in a command prompt with administrative priveleges, and enter the following command:
 ```sh
 setup.bat
 ```
 setup.bat performs the following actions:
 * verifies minimum system requirements are met
 * installs/updates local version of node
-* runs the setup.js file in setup-scripts folder
+* runs the setup.js file in setup folder
 
 **nodeInstallerScript.ps1:** This is a helper script for the main windows setup.bat
 that performs the following actions:
