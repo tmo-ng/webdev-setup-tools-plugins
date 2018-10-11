@@ -16,7 +16,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "webdev-setup-tools": "4.x"
+    "webdev-setup-tools": "5.x"
   },
   "homepage": "https://github.com/tmo-ng/webdev-setup-tools-plugins/tree/master/packages/webdev-setup-tools-maven#readme",
   "bugs": {
