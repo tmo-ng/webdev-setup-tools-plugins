@@ -66,7 +66,7 @@ function local_is_compatible () {
 }
 #install dependencies required by setup.js
 function install_package_dependencies () {
-    if cd ../; then
+    if cd ../../; then
         npm install
     fi
 }
@@ -122,7 +122,7 @@ function main () {
             echo "now installing required package dependencies"
             install_package_dependencies
         else
-            cd ../
+            cd ../../
         fi
         #check here for compatibility
         echo "you are currently using node version $LOCAL_VERSION"
@@ -141,6 +141,6 @@ function main () {
     load_nvm_script
 
     echo "beginning full install"
-    bash -l -c "cd ./setup-scripts && node ./setup.js"
+    bash -l -c "cd ./tools/setup && node ./setup.js"
 }
 main $1
