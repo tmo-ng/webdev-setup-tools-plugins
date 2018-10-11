@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-maven",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "description": "Setup maven for development",
   "main": "lib/installMaven.js",
   "scripts": {

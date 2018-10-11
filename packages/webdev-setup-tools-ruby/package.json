@@ -1,6 +1,6 @@
 {
   "name": "webdev-setup-tools-ruby",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "description": "Set up ruby development tasks",
   "main": "lib/installRuby.js",
   "scripts": {
